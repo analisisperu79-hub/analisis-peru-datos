@@ -107,16 +107,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.markdown(
-    """
-    <div class="ap-section-title">Analiza la serie</div>
-    <div class="ap-section-subtitle">
-      Selecciona el intervalo mensual y la transformación que quieres estudiar.
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
 SERIE = {
     "nombre": "Inflación IPC - variación 12 meses",
     "codigo": "PN01273PM",

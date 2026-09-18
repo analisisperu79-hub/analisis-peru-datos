@@ -19,14 +19,103 @@ from statsmodels.tsa.stattools import adfuller, kpss
 # ============================================================
 
 st.set_page_config(
-    page_title="Inflación | Análisis Perú",
+    page_title="Herramienta de inflación | Análisis Perú",
     page_icon="📈",
     layout="wide",
 )
 
-st.title("Inflación en el Perú")
-st.caption("Piloto de herramienta dinámica para investigación — Análisis Perú")
-st.success("VERSIÓN ACTIVA: V4 — selectores mensuales YYYY-MM")
+# ============================================================
+# ESTILO EMBEBIDO — ANALISIS PERU
+# ============================================================
+# Esta app está pensada para incrustarse dentro de Blogger.
+# Por eso reducimos elementos visuales propios de Streamlit
+# y mantenemos una estética limpia y coherente con el sitio.
+# ============================================================
+
+st.markdown(
+    """
+    <style>
+      .stApp { background: #ffffff; }
+
+      .block-container {
+        max-width: 1100px;
+        padding-top: 0.8rem;
+        padding-bottom: 1.4rem;
+      }
+
+      header[data-testid="stHeader"] { background: transparent; }
+
+      [data-testid="stToolbar"],
+      #MainMenu,
+      footer {
+        visibility: hidden;
+      }
+
+      h2, h3, h4 {
+        color: #12355b;
+        letter-spacing: -0.01em;
+      }
+
+      div[data-testid="stMetric"] {
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 14px 16px;
+      }
+
+      div[data-baseweb="select"] > div {
+        border-radius: 10px;
+      }
+
+      div[data-testid="stFormSubmitButton"] button,
+      div.stButton > button {
+        border-radius: 10px;
+        font-weight: 700;
+      }
+
+      div[data-testid="stAlert"] {
+        border-radius: 10px;
+      }
+
+      div[data-testid="stDataFrame"] {
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      .ap-section-title {
+        font-size: 1.35rem;
+        font-weight: 750;
+        color: #12355b;
+        margin-bottom: 0.15rem;
+      }
+
+      .ap-section-subtitle {
+        color: #64748b;
+        font-size: 0.92rem;
+        margin-bottom: 0.7rem;
+      }
+
+      @media (max-width: 700px) {
+        .block-container {
+          padding-left: 0.8rem;
+          padding-right: 0.8rem;
+        }
+      }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+st.markdown(
+    """
+    <div class="ap-section-title">Analiza la serie</div>
+    <div class="ap-section-subtitle">
+      Selecciona el intervalo mensual y la transformación que quieres estudiar.
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 SERIE = {
     "nombre": "Inflación IPC - variación 12 meses",
@@ -202,7 +291,7 @@ periodos_disponibles = (
 )
 
 st.caption(
-    f"Cobertura real disponible: {periodos_disponibles[0]} → {periodos_disponibles[-1]}"
+    f"Cobertura disponible: {periodos_disponibles[0]} → {periodos_disponibles[-1]}"
 )
 
 if "inicio_activo" not in st.session_state:
@@ -231,7 +320,7 @@ with st.form("filtro_mensual"):
     )
 
     actualizar = st.form_submit_button(
-        "Actualizar análisis",
+        "Aplicar intervalo",
         use_container_width=True,
         type="primary",
     )
@@ -254,9 +343,9 @@ df = df_completo.loc[
 
 df["d_inflacion"] = df["inflacion"].diff()
 
-st.info(
+st.caption(
     f"Muestra activa: {st.session_state.inicio_activo} → "
-    f"{st.session_state.fin_activo} | {len(df)} observaciones"
+    f"{st.session_state.fin_activo} · {len(df)} observaciones"
 )
 
 # ============================================================
@@ -277,14 +366,12 @@ m4.metric("Frecuencia", "Mensual")
 # log(IPC) y Δlog(IPC), donde sí tienen una interpretación natural.
 # ============================================================
 
-st.subheader("Transformaciones para investigación")
+st.divider()
+st.markdown('<div class="ap-section-title">Transformación</div>', unsafe_allow_html=True)
 
-st.markdown(
-    """
-    Selecciona qué versión de la serie quieres visualizar.  
-    Las pruebas de estacionariedad se calculan para **ambas versiones**
-    utilizando exactamente el intervalo mensual activo.
-    """
+st.caption(
+    "El gráfico cambia según la transformación elegida. "
+    "ADF y KPSS se calculan para nivel y primera diferencia."
 )
 
 transformacion = st.selectbox(
@@ -316,7 +403,8 @@ st.caption(descripcion_transformacion)
 # GRAFICO DINAMICO
 # ============================================================
 
-st.subheader("Evolución de la serie")
+st.divider()
+st.markdown('<div class="ap-section-title">Evolución de la serie</div>', unsafe_allow_html=True)
 
 fig = px.line(
     df,
@@ -352,7 +440,8 @@ st.caption(
 # mostramos "No concluyente" en vez de forzar una conclusión.
 # ============================================================
 
-st.subheader("Estacionariedad y orden de integración")
+st.divider()
+st.markdown('<div class="ap-section-title">Estacionariedad y orden de integración</div>', unsafe_allow_html=True)
 
 if len(df) < 24:
     st.warning(
@@ -491,14 +580,16 @@ with st.expander("Metodología e interpretación"):
 # DATOS Y DESCARGAS
 # ============================================================
 
-st.subheader("Datos seleccionados")
+st.divider()
+st.markdown('<div class="ap-section-title">Datos seleccionados</div>', unsafe_allow_html=True)
 
 datos = df[["fecha", "inflacion", "d_inflacion"]].copy()
 datos["fecha"] = datos["fecha"].dt.strftime("%Y-%m")
 
 st.dataframe(datos, use_container_width=True, hide_index=True)
 
-st.subheader("Descargar intervalo seleccionado")
+st.divider()
+st.markdown('<div class="ap-section-title">Descargar muestra</div>', unsafe_allow_html=True)
 
 csv_bytes = datos.to_csv(index=False).encode("utf-8-sig")
 xlsx_bytes = crear_excel(df, resultados, orden)
@@ -524,6 +615,6 @@ d2.download_button(
 )
 
 st.caption(
-    "El gráfico, las transformaciones, las pruebas y las descargas se recalculan "
-    "usando exactamente el intervalo mensual seleccionado."
+    "Resultados calculados sobre el intervalo seleccionado. "
+    "El diagnóstico econométrico es orientativo y depende de la muestra."
 )

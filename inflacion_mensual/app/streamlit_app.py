@@ -280,10 +280,6 @@ periodos_disponibles = (
     .tolist()
 )
 
-st.caption(
-    f"Cobertura disponible: {periodos_disponibles[0]} → {periodos_disponibles[-1]}"
-)
-
 if "inicio_activo" not in st.session_state:
     st.session_state.inicio_activo = "2015-01" if "2015-01" in periodos_disponibles else periodos_disponibles[0]
 

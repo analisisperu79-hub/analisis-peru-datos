@@ -541,40 +541,30 @@ for col in [
         lambda x: "" if pd.isna(x) else f"{x:.4f}"
     )
 
-with st.expander("Ver resultados técnicos completos"):
-    st.dataframe(
-        mostrar,
-        use_container_width=True,
-        hide_index=True
-    )
-
-
 # ------------------------------------------------------------
-# Metodología del diagnóstico
+# Resultados técnicos
+# ------------------------------------------------------------
+# Siempre visibles para mantener estable la altura del iframe.
+# No usamos desplegables.
 # ------------------------------------------------------------
 
-with st.expander("Metodología e interpretación"):
-    st.markdown(
-        """
-        **ADF (Augmented Dickey-Fuller)**  
-        - H₀: la serie tiene raíz unitaria.  
-        - Un p-value menor a 0.05 favorece rechazar H₀.
+st.markdown(
+    '<div class="ap-section-title" style="font-size:1.05rem;">Resultados técnicos</div>',
+    unsafe_allow_html=True
+)
 
-        **KPSS**  
-        - H₀: la serie es estacionaria alrededor de una constante.  
-        - Un p-value mayor a 0.05 es compatible con no rechazar H₀.
+st.dataframe(
+    mostrar,
+    use_container_width=True,
+    hide_index=True
+)
 
-        **Criterio conjunto del piloto**  
-        Consideramos evidencia compatible con estacionariedad cuando
-        ADF rechaza raíz unitaria y KPSS no rechaza estacionariedad.
-
-        **Importante**  
-        El resultado depende del intervalo, de la especificación
-        determinística, de los rezagos y de posibles quiebres estructurales.
-        Por eso el orden de integración mostrado es un diagnóstico inicial
-        para investigación, no una regla automática de modelación.
-        """
-    )
+# La metodología completa se documentará en la sección
+# "Metodología" del sitio Análisis Perú.
+st.caption(
+    "Consulta la sección Metodología de Análisis Perú para la "
+    "interpretación completa de ADF, KPSS y orden de integración."
+)
 
 # ============================================================
 # DATOS Y DESCARGAS

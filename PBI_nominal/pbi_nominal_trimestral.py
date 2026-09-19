@@ -1230,27 +1230,23 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-c1, c2, c3 = st.columns(3)
+c1, c2 = st.columns(2)
 
-# La base para las pruebas siempre nace de la serie base elegida.
-bases_prueba = {
-    "Nivel: PBI": "PBI",
-}
+# La serie base para ADF/KPSS es exactamente la transformación
+# elegida por el usuario en la sección "Transformaciones".
+if transformacion_elegida == "Logaritmo: ln(PBI)":
+    columna_base = "ln_PBI"
+    base_prueba_label = "Logaritmo: ln(PBI)"
+else:
+    columna_base = "PBI"
+    base_prueba_label = "Nivel: PBI"
 
-if log_disponible:
-    bases_prueba["Logaritmo: ln(PBI)"] = "ln_PBI"
-
-base_prueba_label = c1.selectbox(
-    "Serie base para ADF / KPSS",
-    list(bases_prueba.keys()),
-)
-
-metodo_adf = c2.selectbox(
+metodo_adf = c1.selectbox(
     "Selección de rezagos ADF",
     ["AIC", "BIC", "Manual"],
 )
 
-deterministico_label = c3.selectbox(
+deterministico_label = c2.selectbox(
     "Componente determinístico",
     ["Constante", "Constante + tendencia"],
 )
@@ -1265,7 +1261,7 @@ regression = REG_MAP[deterministico_label]
 rezagos_manual = None
 
 if metodo_adf == "Manual":
-    columna_para_rezagos = bases_prueba[base_prueba_label]
+    columna_para_rezagos = columna_base
 
     max_rezagos_manual = max(
         0,
@@ -1300,8 +1296,6 @@ st.markdown(
     '<div class="ap-section-title">Estacionariedad y orden de integración</div>',
     unsafe_allow_html=True,
 )
-
-columna_base = bases_prueba[base_prueba_label]
 
 resultado_integracion = diagnosticar_integracion(
     df[columna_base],

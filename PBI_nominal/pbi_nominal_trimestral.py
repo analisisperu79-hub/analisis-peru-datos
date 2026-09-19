@@ -57,7 +57,9 @@ import pandas as pd
 import plotly.graph_objects as go
 import requests
 import streamlit as st
-import x13binary
+import os
+import tarfile
+from pathlib import Path
 
 from statsmodels.tsa.x13 import x13_arima_analysis
 from statsmodels.tsa.stattools import adfuller, kpss, acf, pacf
@@ -339,30 +341,133 @@ def estadisticos_descriptivos(serie):
 # ============================================================
 # 6. AJUSTE ESTACIONAL CON X-13ARIMA-SEATS
 # ============================================================
+#
+# IMPORTANTE
+# ----------
+# statsmodels lee la salida ASCII de X-13 (.err, .out, .d11, .d12, .d13).
+# El paquete Python "x13binary" distribuye x13as_html, cuya salida HTML
+# no coincide con lo que espera el wrapper de statsmodels.
+#
+# Por eso esta app descarga y usa el ejecutable ASCII OFICIAL de
+# X-13ARIMA-SEATS (Linux/Unix) publicado por el U.S. Census Bureau.
+# La descarga se hace una sola vez por instancia de Streamlit y queda
+# cacheada en /tmp.
+# ============================================================
+
+X13_ASCII_URL = (
+    "https://www2.census.gov/software/x-13arima-seats/"
+    "x13as/unix-linux/program-archives/"
+    "x13as_ascii-v1-1-b62.tar.gz"
+)
+
+
+def _extraccion_segura_tar(tar, destino):
+    """
+    Extrae únicamente miembros que permanecen dentro de 'destino'.
+    El archivo proviene del U.S. Census Bureau, pero mantenemos una
+    validación explícita de rutas.
+    """
+    destino = Path(destino).resolve()
+
+    for miembro in tar.getmembers():
+        ruta_destino = (destino / miembro.name).resolve()
+
+        if ruta_destino != destino and destino not in ruta_destino.parents:
+            continue
+
+        tar.extract(miembro, path=destino)
+
+
+@st.cache_resource(show_spinner=False)
+def obtener_x13_ascii():
+    """
+    Descarga/localiza el ejecutable ASCII oficial de X-13ARIMA-SEATS.
+
+    Devuelve
+    --------
+    str
+        Ruta completa al ejecutable.
+    """
+    carpeta = Path("/tmp/analisis_peru_x13_ascii_b62")
+    carpeta.mkdir(parents=True, exist_ok=True)
+
+    # Primero intentamos reutilizar una instalación previa de esta instancia.
+    candidatos_nombres = {
+        "x13as_ascii",
+        "x13as",
+        "x13as_ascii.exe",
+        "x13as.exe",
+    }
+
+    for archivo in carpeta.rglob("*"):
+        if (
+            archivo.is_file()
+            and archivo.name.lower() in candidatos_nombres
+            and archivo.stat().st_size > 500_000
+        ):
+            try:
+                archivo.chmod(archivo.stat().st_mode | 0o111)
+            except Exception:
+                pass
+            return str(archivo)
+
+    archivo_tar = carpeta / "x13as_ascii-v1-1-b62.tar.gz"
+
+    respuesta = requests.get(
+        X13_ASCII_URL,
+        timeout=90,
+        headers={"User-Agent": "AnalisisPeru/1.0"},
+    )
+    respuesta.raise_for_status()
+    archivo_tar.write_bytes(respuesta.content)
+
+    with tarfile.open(archivo_tar, mode="r:gz") as tar:
+        _extraccion_segura_tar(tar, carpeta)
+
+    # Buscar el ejecutable después de extraer.
+    candidatos = []
+
+    for archivo in carpeta.rglob("*"):
+        if not archivo.is_file():
+            continue
+
+        nombre = archivo.name.lower()
+
+        # Priorizamos la variante ASCII explícita.
+        if nombre in candidatos_nombres:
+            candidatos.append(archivo)
+
+    if not candidatos:
+        raise FileNotFoundError(
+            "El archivo oficial fue descargado, pero no se encontró "
+            "el ejecutable X-13 ASCII dentro del paquete."
+        )
+
+    # Preferir x13as_ascii frente a x13as si ambos existieran.
+    candidatos.sort(
+        key=lambda p: (
+            0 if "ascii" in p.name.lower() else 1,
+            -p.stat().st_size,
+        )
+    )
+
+    ejecutable = candidatos[0]
+    ejecutable.chmod(ejecutable.stat().st_mode | 0o111)
+
+    return str(ejecutable)
+
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def ajuste_estacional_x13(fechas, valores):
     """
     Ajusta estacionalmente una serie trimestral con X-13ARIMA-SEATS.
 
-    Flujo:
-    1. Construye una Serie pandas trimestral.
-    2. Localiza el ejecutable X-13 provisto por x13binary.
-    3. Ejecuta x13_arima_analysis.
-    4. Devuelve:
-       - serie ajustada estacionalmente
-       - tendencia-ciclo
-       - componente irregular
-       - especificación usada por X-13
+    La serie ajustada se devuelve en las mismas unidades que la original.
 
-    Regla sobre logaritmos dentro de X-13:
-    - Si todos los valores son estrictamente positivos, se deja log=None
-      para permitir la selección automática de transformación de X-13.
-    - Si existe algún valor <= 0, se fuerza log=False, ya que el logaritmo
-      no está definido para esos valores.
-
-    IMPORTANTE:
-    La serie ajustada se devuelve en las mismas unidades de la serie original.
+    Transformación interna:
+    - si todos los valores son > 0, X-13 puede decidir automáticamente
+      si usa transformación log;
+    - si existe X <= 0, se impide el uso de logaritmos dentro de X-13.
     """
     x = pd.Series(
         data=np.asarray(valores, dtype=float),
@@ -379,31 +484,30 @@ def ajuste_estacional_x13(fechas, valores):
             ),
         }
 
-    # X-13 requiere frecuencia regular.
+    # Frecuencia trimestral regular al inicio de cada trimestre.
     x = x.asfreq("QS")
 
     if x.isna().any():
         return {
             "ok": False,
             "mensaje": (
-                "La muestra contiene periodos trimestrales faltantes. "
+                "La muestra contiene trimestres faltantes. "
                 "X-13ARIMA-SEATS requiere una serie regular sin huecos."
             ),
         }
 
-    # Localizar el binario instalado por x13binary.
     try:
-        x13_path = x13binary.find_x13_bin()
+        x13_path = obtener_x13_ascii()
     except Exception as e:
         return {
             "ok": False,
             "mensaje": (
-                "No se pudo localizar el ejecutable X-13ARIMA-SEATS. "
+                "No fue posible preparar el ejecutable oficial de "
+                "X-13ARIMA-SEATS. "
                 f"Detalle técnico: {type(e).__name__}"
             ),
         }
 
-    # Si hay ceros/negativos, X-13 no puede usar transformación log.
     log_x13 = None if (x > 0).all() else False
 
     try:
@@ -875,6 +979,7 @@ st.plotly_chart(
     ),
     use_container_width=True,
     config={"displayModeBar": False},
+    key="grafico_serie_original",
 )
 
 st.caption(
@@ -978,6 +1083,7 @@ if usar_ajustada:
             fig_sa,
             use_container_width=True,
             config={"displayModeBar": False},
+            key="grafico_comparacion_x13",
         )
 
         st.success(
@@ -1075,6 +1181,7 @@ st.plotly_chart(
     ),
     use_container_width=True,
     config={"displayModeBar": False},
+    key="grafico_transformacion",
 )
 
 
@@ -1158,6 +1265,7 @@ if len(serie_dinamica) >= 8:
             grafico_correlacion(df_acf, "ACF"),
             use_container_width=True,
             config={"displayModeBar": False},
+            key="grafico_acf",
         )
 
     with c2:
@@ -1165,6 +1273,7 @@ if len(serie_dinamica) >= 8:
             grafico_correlacion(df_pacf, "PACF"),
             use_container_width=True,
             config={"displayModeBar": False},
+            key="grafico_pacf",
         )
 
 else:

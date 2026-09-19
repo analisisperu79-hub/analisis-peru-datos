@@ -1134,11 +1134,6 @@ if usar_ajustada:
             key="grafico_comparacion_x13",
         )
 
-        st.success(
-            "A partir de este punto, el análisis utiliza la serie "
-            "ajustada estacionalmente con X-13ARIMA-SEATS."
-        )
-
     else:
         usar_ajustada = False
         st.warning(resultado_x13["mensaje"])
@@ -1205,12 +1200,6 @@ opciones_transformacion = {
 if log_disponible:
     opciones_transformacion["Logaritmo: ln(PBI)"] = ("ln_PBI", "ln(PBI)")
 
-# Primera diferencia simple.
-opciones_transformacion["Primera diferencia: ΔPBI"] = (
-    "d_PBI",
-    f"Δ {SERIE['unidad']}"
-)
-
 transformacion_elegida = st.selectbox(
     "Transformación",
     list(opciones_transformacion.keys()),
@@ -1230,62 +1219,6 @@ st.plotly_chart(
     config={"displayModeBar": False},
     key="grafico_transformacion",
 )
-
-
-# ============================================================
-# 18. DINÁMICA TEMPORAL — ACF / PACF
-# ============================================================
-# Se calculan sobre la TRANSFORMACIÓN elegida por el usuario,
-# la cual a su vez proviene de la SERIE BASE elegida.
-# ============================================================
-
-st.markdown(
-    '<div class="ap-section-title">Dinámica temporal</div>',
-    unsafe_allow_html=True,
-)
-
-serie_dinamica = df[columna_grafico].dropna()
-
-if len(serie_dinamica) >= 8:
-    max_lags = max(
-        1,
-        min(20, len(serie_dinamica) // 2 - 1),
-    )
-
-    lags_acf = st.slider(
-        "Rezagos para ACF / PACF",
-        min_value=1,
-        max_value=max_lags,
-        value=min(12, max_lags),
-    )
-
-    df_acf, df_pacf = calcular_acf_pacf(
-        serie_dinamica,
-        lags_acf,
-    )
-
-    c1, c2 = st.columns(2)
-
-    with c1:
-        st.plotly_chart(
-            grafico_correlacion(df_acf, "ACF"),
-            use_container_width=True,
-            config={"displayModeBar": False},
-            key="grafico_acf",
-        )
-
-    with c2:
-        st.plotly_chart(
-            grafico_correlacion(df_pacf, "PACF"),
-            use_container_width=True,
-            config={"displayModeBar": False},
-            key="grafico_pacf",
-        )
-
-else:
-    st.info(
-        "La muestra seleccionada es demasiado corta para mostrar ACF y PACF."
-    )
 
 
 # ============================================================
@@ -1455,8 +1388,133 @@ st.caption(
 )
 
 
+
 # ============================================================
-# 21. DATOS SELECCIONADOS
+# 21. TRANSFORMACIÓN POSTERIOR AL DIAGNÓSTICO
+# ============================================================
+
+st.markdown(
+    '<div class="ap-section-title">Transformación posterior al diagnóstico</div>',
+    unsafe_allow_html=True,
+)
+
+serie_para_dinamica = df[columna_base].copy()
+nombre_serie_dinamica = base_prueba_label
+usar_primera_diferencia = False
+
+if resultado_integracion["orden"] == "I(1)":
+    st.markdown(
+        """
+        <div class="ap-note">
+        El diagnóstico sugiere que la serie base es integrada de orden 1, I(1).
+        Si deseas, puedes aplicar una primera diferencia antes de analizar
+        la dinámica temporal.
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    usar_primera_diferencia = st.checkbox(
+        "Aplicar primera diferencia para el análisis posterior",
+        value=False,
+        key="aplicar_primera_diferencia_post_test",
+    )
+
+    if usar_primera_diferencia:
+        serie_para_dinamica = df[columna_base].diff()
+        nombre_serie_dinamica = f"Primera diferencia de {base_prueba_label}"
+
+        fig_diff = go.Figure()
+        fig_diff.add_trace(
+            go.Scatter(
+                x=df["fecha"],
+                y=serie_para_dinamica,
+                mode="lines",
+                name=nombre_serie_dinamica,
+                hovertemplate="%{x|%Y Q%q}<br>%{y:,.2f}<extra></extra>",
+            )
+        )
+        fig_diff.update_layout(
+            template="plotly_white",
+            height=420,
+            margin=dict(l=20, r=15, t=20, b=30),
+            hovermode="x unified",
+            xaxis_title="",
+            yaxis_title=nombre_serie_dinamica,
+            yaxis_tickformat=",.2f",
+            showlegend=False,
+        )
+
+        st.plotly_chart(
+            fig_diff,
+            use_container_width=True,
+            config={"displayModeBar": False},
+            key="grafico_primera_diferencia_post_test",
+        )
+
+    st.caption(f"Serie utilizada para ACF y PACF: {nombre_serie_dinamica}.")
+
+elif resultado_integracion["orden"] == "I(0)":
+    st.info(
+        "El diagnóstico sugiere I(0). No se propone una primera diferencia "
+        "antes de ACF/PACF."
+    )
+else:
+    st.info(
+        "El orden de integración no es concluyente. La aplicación no propone "
+        "automáticamente una primera diferencia."
+    )
+
+
+# ============================================================
+# 22. DINÁMICA TEMPORAL — ACF / PACF
+# ============================================================
+
+st.markdown(
+    '<div class="ap-section-title">Dinámica temporal</div>',
+    unsafe_allow_html=True,
+)
+
+serie_dinamica = pd.Series(serie_para_dinamica).dropna()
+
+if len(serie_dinamica) >= 8:
+    max_lags = max(1, min(20, len(serie_dinamica) // 2 - 1))
+
+    lags_acf = st.slider(
+        "Rezagos para ACF / PACF",
+        min_value=1,
+        max_value=max_lags,
+        value=min(12, max_lags),
+        key="lags_acf_pacf_post_test",
+    )
+
+    df_acf, df_pacf = calcular_acf_pacf(serie_dinamica, lags_acf)
+
+    c1, c2 = st.columns(2)
+
+    with c1:
+        st.plotly_chart(
+            grafico_correlacion(df_acf, "ACF"),
+            use_container_width=True,
+            config={"displayModeBar": False},
+            key="grafico_acf_post_test",
+        )
+
+    with c2:
+        st.plotly_chart(
+            grafico_correlacion(df_pacf, "PACF"),
+            use_container_width=True,
+            config={"displayModeBar": False},
+            key="grafico_pacf_post_test",
+        )
+else:
+    st.info(
+        "La muestra seleccionada es demasiado corta para mostrar ACF y PACF."
+    )
+
+
+# ============================================================
+# 23. DATOS SELECCIONADOS
 # ============================================================
 
 st.markdown(
@@ -1478,21 +1536,21 @@ if ajuste_disponible:
     columnas_tabla.append("PBI_ajustado")
     nombres_tabla["PBI_ajustado"] = "Serie ajustada X-13"
 
-columnas_tabla += [
-    "PBI",
-    "d_PBI",
-]
-
-nombres_tabla.update(
-    {
-        "PBI": "PBI usado en análisis",
-        "d_PBI": "ΔPBI",
-    }
-)
+columnas_tabla.append("PBI")
+nombres_tabla["PBI"] = "PBI usado en análisis"
 
 if log_disponible:
     columnas_tabla.append("ln_PBI")
     nombres_tabla["ln_PBI"] = "ln(PBI)"
+
+if usar_primera_diferencia:
+    df["d_serie_seleccionada"] = df[columna_base].diff()
+    columnas_tabla.append("d_serie_seleccionada")
+
+    if columna_base == "ln_PBI":
+        nombres_tabla["d_serie_seleccionada"] = "Δln(PBI)"
+    else:
+        nombres_tabla["d_serie_seleccionada"] = "ΔPBI"
 
 tabla_datos = (
     df[columnas_tabla]
@@ -1519,7 +1577,7 @@ st.dataframe(
 
 
 # ============================================================
-# 22. DESCARGAS
+# 24. DESCARGAS
 # ============================================================
 
 st.markdown(
@@ -1552,6 +1610,7 @@ especificacion = pd.DataFrame(
             "Componente determinístico",
             "KPSS bandwidth/rezagos",
             "Orden de integración sugerido",
+            "Primera diferencia aplicada después del diagnóstico",
         ],
         "Valor": [
             SERIE["nombre"],
@@ -1580,6 +1639,7 @@ especificacion = pd.DataFrame(
             deterministico_label,
             "Automático",
             resultado_integracion["orden"],
+            "Sí" if usar_primera_diferencia else "No",
         ],
     }
 )

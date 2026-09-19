@@ -630,7 +630,7 @@ def grafico_correlacion(df_corr, titulo):
                 mode="markers",
                 marker=dict(size=7),
                 showlegend=False,
-                hovertemplate="Rezago %{x}<br>Correlación %{y:.4f}<extra></extra>",
+                hovertemplate="Rezago %{x}<br>Correlación %{y:.2f}<extra></extra>",
             )
         )
 
@@ -642,6 +642,7 @@ def grafico_correlacion(df_corr, titulo):
         margin=dict(l=20, r=15, t=45, b=30),
         xaxis_title="Rezago",
         yaxis_title="Correlación",
+        yaxis_tickformat=".2f",
         template="plotly_white",
     )
 
@@ -865,7 +866,7 @@ def grafico_serie(df, columna, etiqueta_y, titulo=None):
             y=df[columna],
             mode="lines",
             name=etiqueta_y,
-            hovertemplate="%{x|%Y Q%q}<br>%{y:,.4f}<extra></extra>",
+            hovertemplate="%{x|%Y Q%q}<br>%{y:,.2f}<extra></extra>",
         )
     )
 
@@ -877,6 +878,7 @@ def grafico_serie(df, columna, etiqueta_y, titulo=None):
         hovermode="x unified",
         xaxis_title="",
         yaxis_title=etiqueta_y,
+        yaxis_tickformat=",.2f",
         showlegend=False,
     )
 
@@ -994,7 +996,7 @@ for bloque in range(0, len(metricas), 4):
             texto = (
                 "—"
                 if valor is None or pd.isna(valor)
-                else f"{valor:,.4f}"
+                else f"{valor:,.2f}"
             )
 
         col.metric(nombre, texto)
@@ -1100,6 +1102,7 @@ if usar_ajustada:
                 y=df["PBI_original"],
                 mode="lines",
                 name="Original",
+                hovertemplate="%{x|%Y Q%q}<br>%{y:,.2f}<extra></extra>",
             )
         )
 
@@ -1109,6 +1112,7 @@ if usar_ajustada:
                 y=df["PBI_ajustado"],
                 mode="lines",
                 name="Ajustada X-13",
+                hovertemplate="%{x|%Y Q%q}<br>%{y:,.2f}<extra></extra>",
             )
         )
 
@@ -1119,6 +1123,7 @@ if usar_ajustada:
             hovermode="x unified",
             xaxis_title="",
             yaxis_title=SERIE["unidad"],
+            yaxis_tickformat=",.2f",
             legend=dict(orientation="h"),
         )
 
@@ -1434,8 +1439,8 @@ resultados_pruebas = pd.DataFrame(
 st.dataframe(
     resultados_pruebas.style.format(
         {
-            "Estadístico": "{:.6f}",
-            "p-value": "{:.6f}",
+            "Estadístico": "{:.2f}",
+            "p-value": "{:.2f}",
         },
         na_rep="—",
     ),
@@ -1507,8 +1512,19 @@ tabla_datos = (
     .copy()
 )
 
+# Vista para pantalla: redondeada/formateada a 2 decimales.
+# IMPORTANTE: tabla_datos conserva internamente todos los decimales.
+tabla_datos_pantalla = tabla_datos.copy()
+
+columnas_numericas_pantalla = tabla_datos_pantalla.select_dtypes(
+    include=[np.number]
+).columns
+
 st.dataframe(
-    tabla_datos,
+    tabla_datos_pantalla.style.format(
+        {col: "{:,.2f}" for col in columnas_numericas_pantalla},
+        na_rep="—",
+    ),
     use_container_width=True,
     hide_index=True,
 )

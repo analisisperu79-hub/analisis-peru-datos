@@ -960,7 +960,50 @@ df["PBI_original"] = df["PBI"]
 
 
 # ============================================================
-# 14. SERIE ORIGINAL
+# 14. RESUMEN DE LA MUESTRA ORIGINAL
+# ============================================================
+
+st.markdown(
+    '<div class="ap-section-title">Resumen de la muestra</div>',
+    unsafe_allow_html=True,
+)
+
+stats = estadisticos_descriptivos(df["PBI"])
+
+metricas = [
+    ("Observaciones", stats.get("Observaciones")),
+    ("Media", stats.get("Media")),
+    ("Mediana", stats.get("Mediana")),
+    ("Desv. estándar", stats.get("Desv. estándar")),
+    ("Mínimo", stats.get("Mínimo")),
+    ("Máximo", stats.get("Máximo")),
+    ("Asimetría", stats.get("Asimetría")),
+    ("Curtosis", stats.get("Curtosis")),
+]
+
+for bloque in range(0, len(metricas), 4):
+    columnas = st.columns(4)
+
+    for col, (nombre, valor) in zip(
+        columnas,
+        metricas[bloque:bloque + 4],
+    ):
+        if nombre == "Observaciones":
+            texto = f"{int(valor)}" if valor is not None else "—"
+        else:
+            texto = (
+                "—"
+                if valor is None or pd.isna(valor)
+                else f"{valor:,.4f}"
+            )
+
+        col.metric(nombre, texto)
+
+
+
+
+# ============================================================
+# 15. SERIE ORIGINAL
 # ============================================================
 # Primero se muestra únicamente la serie original.
 # Todavía no se aplican logaritmos, diferencias ni pruebas.
@@ -990,7 +1033,7 @@ st.caption(
 
 
 # ============================================================
-# 15. AJUSTE ESTACIONAL
+# 16. AJUSTE ESTACIONAL
 # ============================================================
 # El usuario decide si quiere trabajar con:
 #   - la serie original, o
@@ -1115,7 +1158,7 @@ st.markdown(
 )
 
 # ============================================================
-# 16. TRANSFORMACIONES DE LA SERIE BASE
+# 17. TRANSFORMACIONES DE LA SERIE BASE
 # ============================================================
 # Las transformaciones se calculan DESPUÉS de fijar la serie base.
 #
@@ -1183,47 +1226,6 @@ st.plotly_chart(
     config={"displayModeBar": False},
     key="grafico_transformacion",
 )
-
-
-# ============================================================
-# 17. RESUMEN DE LA SERIE BASE
-# ============================================================
-
-st.markdown(
-    '<div class="ap-section-title">Resumen de la muestra</div>',
-    unsafe_allow_html=True,
-)
-
-stats = estadisticos_descriptivos(df["PBI"])
-
-metricas = [
-    ("Observaciones", stats.get("Observaciones")),
-    ("Media", stats.get("Media")),
-    ("Mediana", stats.get("Mediana")),
-    ("Desv. estándar", stats.get("Desv. estándar")),
-    ("Mínimo", stats.get("Mínimo")),
-    ("Máximo", stats.get("Máximo")),
-    ("Asimetría", stats.get("Asimetría")),
-    ("Curtosis", stats.get("Curtosis")),
-]
-
-for bloque in range(0, len(metricas), 4):
-    columnas = st.columns(4)
-
-    for col, (nombre, valor) in zip(
-        columnas,
-        metricas[bloque:bloque + 4],
-    ):
-        if nombre == "Observaciones":
-            texto = f"{int(valor)}" if valor is not None else "—"
-        else:
-            texto = (
-                "—"
-                if valor is None or pd.isna(valor)
-                else f"{valor:,.4f}"
-            )
-
-        col.metric(nombre, texto)
 
 
 # ============================================================

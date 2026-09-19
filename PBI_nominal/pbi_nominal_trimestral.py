@@ -1185,7 +1185,7 @@ if not log_disponible:
         <div class="ap-note">
         <b>Transformaciones logarítmicas no disponibles para esta muestra.</b><br>
         La serie base contiene {cantidad_no_positivos} observación(es) con
-        valor igual o menor que cero. Por seguridad, no se calcula ln(X). Tampoco se aplican valores absolutos
+        valor igual o menor que cero. Por seguridad, no se calcula ln(PBI). Tampoco se aplican valores absolutos
         ni constantes artificiales.
         </div>
         """,
@@ -1198,15 +1198,15 @@ st.markdown(
 )
 
 opciones_transformacion = {
-    "Nivel: X": ("PBI", SERIE["unidad"]),
+    "Nivel: PBI": ("PBI", SERIE["unidad"]),
 }
 
 # El logaritmo solo se ofrece cuando toda la serie base es estrictamente positiva.
 if log_disponible:
-    opciones_transformacion["Logaritmo: ln(X)"] = ("ln_PBI", "ln(X)")
+    opciones_transformacion["Logaritmo: ln(PBI)"] = ("ln_PBI", "ln(PBI)")
 
 # Primera diferencia simple.
-opciones_transformacion["Primera diferencia: ΔX"] = (
+opciones_transformacion["Primera diferencia: ΔPBI"] = (
     "d_PBI",
     f"Δ {SERIE['unidad']}"
 )
@@ -1301,11 +1301,11 @@ c1, c2, c3 = st.columns(3)
 
 # La base para las pruebas siempre nace de la serie base elegida.
 bases_prueba = {
-    "Nivel: X": "PBI",
+    "Nivel: PBI": "PBI",
 }
 
 if log_disponible:
-    bases_prueba["Logaritmo: ln(X)"] = "ln_PBI"
+    bases_prueba["Logaritmo: ln(PBI)"] = "ln_PBI"
 
 base_prueba_label = c1.selectbox(
     "Serie base para ADF / KPSS",
@@ -1485,14 +1485,14 @@ columnas_tabla += [
 
 nombres_tabla.update(
     {
-        "PBI": "X usada en análisis",
-        "d_PBI": "ΔX",
+        "PBI": "PBI usado en análisis",
+        "d_PBI": "ΔPBI",
     }
 )
 
 if log_disponible:
     columnas_tabla.append("ln_PBI")
-    nombres_tabla["ln_PBI"] = "ln(X)"
+    nombres_tabla["ln_PBI"] = "ln(PBI)"
 
 tabla_datos = (
     df[columnas_tabla]

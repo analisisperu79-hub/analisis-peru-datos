@@ -1185,8 +1185,7 @@ if not log_disponible:
         <div class="ap-note">
         <b>Transformaciones logarítmicas no disponibles para esta muestra.</b><br>
         La serie base contiene {cantidad_no_positivos} observación(es) con
-        valor igual o menor que cero. Por seguridad, no se calculan
-        ln(X), Δln(X) ni 100×Δln(X). Tampoco se aplican valores absolutos
+        valor igual o menor que cero. Por seguridad, no se calcula ln(X). Tampoco se aplican valores absolutos
         ni constantes artificiales.
         </div>
         """,
@@ -1200,17 +1199,17 @@ st.markdown(
 
 opciones_transformacion = {
     "Nivel: X": ("PBI", SERIE["unidad"]),
-    "Primera diferencia: ΔX": ("d_PBI", f"Δ {SERIE['unidad']}"),
 }
 
+# El logaritmo solo se ofrece cuando toda la serie base es estrictamente positiva.
 if log_disponible:
-    opciones_transformacion.update(
-        {
-            "Logaritmo: ln(X)": ("ln_PBI", "ln(X)"),
-            "Diferencia logarítmica: Δln(X)": ("d_ln_PBI", "Δln(X)"),
-            "100 × Δln(X)": ("100_d_ln_PBI", "100 × Δln(X)"),
-        }
-    )
+    opciones_transformacion["Logaritmo: ln(X)"] = ("ln_PBI", "ln(X)")
+
+# Primera diferencia simple.
+opciones_transformacion["Primera diferencia: ΔX"] = (
+    "d_PBI",
+    f"Δ {SERIE['unidad']}"
+)
 
 transformacion_elegida = st.selectbox(
     "Transformación",
@@ -1492,19 +1491,8 @@ nombres_tabla.update(
 )
 
 if log_disponible:
-    columnas_tabla += [
-        "ln_PBI",
-        "d_ln_PBI",
-        "100_d_ln_PBI",
-    ]
-
-    nombres_tabla.update(
-        {
-            "ln_PBI": "ln(X)",
-            "d_ln_PBI": "Δln(X)",
-            "100_d_ln_PBI": "100×Δln(X)",
-        }
-    )
+    columnas_tabla.append("ln_PBI")
+    nombres_tabla["ln_PBI"] = "ln(X)"
 
 tabla_datos = (
     df[columnas_tabla]

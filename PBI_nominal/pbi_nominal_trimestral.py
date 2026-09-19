@@ -1614,8 +1614,11 @@ if ajuste_disponible:
     columnas_tabla.append("PBI_ajustado")
     nombres_tabla["PBI_ajustado"] = "Serie ajustada X-13"
 
-columnas_tabla.append("PBI")
-nombres_tabla["PBI"] = "PBI usado en análisis"
+# No mostramos una columna adicional "PBI usado en análisis" porque
+# resulta redundante con la serie original o la serie ajustada X-13
+# ya visibles en la tabla.
+#
+# Conservamos internamente df["PBI"] como serie base para todos los cálculos.
 
 if log_disponible:
     columnas_tabla.append("ln_PBI")

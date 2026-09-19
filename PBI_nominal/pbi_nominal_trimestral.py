@@ -1306,20 +1306,105 @@ resultado_integracion = diagnosticar_integracion(
 
 r1, r2, r3 = st.columns(3)
 
-r1.metric(
-    "Diagnóstico en nivel",
-    resultado_integracion["diag_nivel"],
+def etiqueta_simple_diagnostico(texto):
+    """
+    Simplifica el diagnóstico para la interfaz.
+    La explicación metodológica completa de ADF/KPSS queda fuera de la app.
+    """
+    if texto == "Evidencia compatible con estacionariedad":
+        return "Estacionaria"
+    if texto == "Evidencia compatible con no estacionariedad":
+        return "No estacionaria"
+    return "No concluyente"
+
+diag_nivel_simple = etiqueta_simple_diagnostico(
+    resultado_integracion["diag_nivel"]
 )
 
-r2.metric(
-    "Diagnóstico en 1.ª diferencia",
-    resultado_integracion["diag_diferencia"],
+diag_diferencia_simple = etiqueta_simple_diagnostico(
+    resultado_integracion["diag_diferencia"]
 )
 
-r3.metric(
-    "Orden sugerido",
-    resultado_integracion["orden"],
-)
+with r1:
+    st.markdown(
+        f"""
+        <div style="
+            border:1px solid #e7eaf0;
+            border-radius:9px;
+            padding:0.65rem 0.75rem;
+            background:#ffffff;
+        ">
+            <div style="font-size:0.82rem; color:#4b5563; margin-bottom:0.25rem;">
+                Diagnóstico en nivel
+            </div>
+            <div style="font-size:1.15rem; font-weight:600; color:#17365d;">
+                {diag_nivel_simple}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+with r2:
+    st.markdown(
+        f"""
+        <div style="
+            border:1px solid #e7eaf0;
+            border-radius:9px;
+            padding:0.65rem 0.75rem;
+            background:#ffffff;
+        ">
+            <div style="font-size:0.82rem; color:#4b5563; margin-bottom:0.25rem;">
+                Diagnóstico en 1.ª diferencia
+            </div>
+            <div style="font-size:1.15rem; font-weight:600; color:#17365d;">
+                {diag_diferencia_simple}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+with r3:
+    st.markdown(
+        f"""
+        <div style="
+            border:1px solid #e7eaf0;
+            border-radius:9px;
+            padding:0.65rem 0.75rem;
+            background:#ffffff;
+        ">
+            <div style="font-size:0.82rem; color:#4b5563; margin-bottom:0.25rem;">
+                Orden sugerido
+            </div>
+            <div style="font-size:1.15rem; font-weight:600; color:#17365d;">
+                {resultado_integracion["orden"]}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+def resultado_simple_prueba(prueba, p_value):
+    """
+    Traducción visual simplificada:
+    - ADF: p < 0.05 -> Estacionaria; en otro caso -> No estacionaria.
+    - KPSS: p >= 0.05 -> Estacionaria; en otro caso -> No estacionaria.
+
+    La interpretación de H0 y los detalles técnicos se documentan
+    en la sección Metodología del sitio.
+    """
+    if pd.isna(p_value):
+        return "No concluyente"
+
+    if prueba == "ADF":
+        return "Estacionaria" if p_value < 0.05 else "No estacionaria"
+
+    if prueba == "KPSS":
+        return "Estacionaria" if p_value >= 0.05 else "No estacionaria"
+
+    return "No concluyente"
+
 
 resultados_pruebas = pd.DataFrame(
     [
@@ -1330,7 +1415,7 @@ resultados_pruebas = pd.DataFrame(
             "p-value": resultado_integracion["adf_nivel"]["p_value"],
             "Rezagos": resultado_integracion["adf_nivel"]["rezagos"],
             "N": resultado_integracion["adf_nivel"]["nobs"],
-            "Resultado": resultado_integracion["adf_nivel"]["estado"],
+            "Resultado": resultado_simple_prueba("ADF", resultado_integracion["adf_nivel"]["p_value"]),
         },
         {
             "Transformación": base_prueba_label,
@@ -1339,7 +1424,7 @@ resultados_pruebas = pd.DataFrame(
             "p-value": resultado_integracion["kpss_nivel"]["p_value"],
             "Rezagos": resultado_integracion["kpss_nivel"]["rezagos"],
             "N": resultado_integracion["kpss_nivel"]["nobs"],
-            "Resultado": resultado_integracion["kpss_nivel"]["estado"],
+            "Resultado": resultado_simple_prueba("KPSS", resultado_integracion["kpss_nivel"]["p_value"]),
         },
         {
             "Transformación": f"Δ({base_prueba_label})",
@@ -1348,7 +1433,7 @@ resultados_pruebas = pd.DataFrame(
             "p-value": resultado_integracion["adf_diferencia"]["p_value"],
             "Rezagos": resultado_integracion["adf_diferencia"]["rezagos"],
             "N": resultado_integracion["adf_diferencia"]["nobs"],
-            "Resultado": resultado_integracion["adf_diferencia"]["estado"],
+            "Resultado": resultado_simple_prueba("ADF", resultado_integracion["adf_diferencia"]["p_value"]),
         },
         {
             "Transformación": f"Δ({base_prueba_label})",
@@ -1357,7 +1442,7 @@ resultados_pruebas = pd.DataFrame(
             "p-value": resultado_integracion["kpss_diferencia"]["p_value"],
             "Rezagos": resultado_integracion["kpss_diferencia"]["rezagos"],
             "N": resultado_integracion["kpss_diferencia"]["nobs"],
-            "Resultado": resultado_integracion["kpss_diferencia"]["estado"],
+            "Resultado": resultado_simple_prueba("KPSS", resultado_integracion["kpss_diferencia"]["p_value"]),
         },
     ]
 )
@@ -1375,10 +1460,9 @@ st.dataframe(
 )
 
 st.caption(
-    "El diagnóstico corresponde exclusivamente a la muestra, serie base "
-    "y especificación seleccionadas. Cambiar el intervalo, el ajuste "
-    "estacional, los rezagos o el componente determinístico puede modificar "
-    "los resultados."
+    "Los resultados corresponden a la muestra y especificación seleccionadas. "
+    "La interpretación de las hipótesis nulas, criterios de decisión y "
+    "limitaciones de ADF/KPSS se explica en la sección Metodología."
 )
 
 

@@ -5,3 +5,4 @@ plotly
 requests
 statsmodels
 openpyxl
+x13binary==1.1.61

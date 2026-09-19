@@ -57,8 +57,9 @@ import pandas as pd
 import plotly.graph_objects as go
 import requests
 import streamlit as st
+import x13binary
 
-from statsmodels.tsa.seasonal import STL
+from statsmodels.tsa.x13 import x13_arima_analysis
 from statsmodels.tsa.stattools import adfuller, kpss, acf, pacf
 
 warnings.filterwarnings("ignore")
@@ -336,38 +337,104 @@ def estadisticos_descriptivos(serie):
 
 
 # ============================================================
-# 6. AJUSTE ESTACIONAL EXPLORATORIO
+# 6. AJUSTE ESTACIONAL CON X-13ARIMA-SEATS
 # ============================================================
 
-def ajuste_estacional_stl(serie, periodo=4):
+@st.cache_data(ttl=3600, show_spinner=False)
+def ajuste_estacional_x13(fechas, valores):
     """
-    Ajuste estacional exploratorio con STL.
+    Ajusta estacionalmente una serie trimestral con X-13ARIMA-SEATS.
 
-    Para series trimestrales se usa periodo=4.
+    Flujo:
+    1. Construye una Serie pandas trimestral.
+    2. Localiza el ejecutable X-13 provisto por x13binary.
+    3. Ejecuta x13_arima_analysis.
+    4. Devuelve:
+       - serie ajustada estacionalmente
+       - tendencia-ciclo
+       - componente irregular
+       - especificación usada por X-13
 
-    Resultado:
-        serie ajustada = serie observada - componente estacional
+    Regla sobre logaritmos dentro de X-13:
+    - Si todos los valores son estrictamente positivos, se deja log=None
+      para permitir la selección automática de transformación de X-13.
+    - Si existe algún valor <= 0, se fuerza log=False, ya que el logaritmo
+      no está definido para esos valores.
 
-    NOTA:
-    Si existe una serie desestacionalizada oficial de la fuente,
-    debe distinguirse claramente de este cálculo propio.
+    IMPORTANTE:
+    La serie ajustada se devuelve en las mismas unidades de la serie original.
     """
-    x = pd.Series(serie).dropna()
+    x = pd.Series(
+        data=np.asarray(valores, dtype=float),
+        index=pd.DatetimeIndex(fechas),
+        name="PBI",
+    ).dropna()
 
-    # Exigimos al menos 4 años para no mostrar un ajuste muy débil.
     if len(x) < 16:
-        return None, None
+        return {
+            "ok": False,
+            "mensaje": (
+                "La muestra es demasiado corta para realizar un ajuste "
+                "estacional trimestral con X-13ARIMA-SEATS."
+            ),
+        }
 
-    resultado = STL(
-        x,
-        period=periodo,
-        robust=True,
-    ).fit()
+    # X-13 requiere frecuencia regular.
+    x = x.asfreq("QS")
 
-    ajustada = x - resultado.seasonal
-    estacional = resultado.seasonal
+    if x.isna().any():
+        return {
+            "ok": False,
+            "mensaje": (
+                "La muestra contiene periodos trimestrales faltantes. "
+                "X-13ARIMA-SEATS requiere una serie regular sin huecos."
+            ),
+        }
 
-    return ajustada, estacional
+    # Localizar el binario instalado por x13binary.
+    try:
+        x13_path = x13binary.find_x13_bin()
+    except Exception as e:
+        return {
+            "ok": False,
+            "mensaje": (
+                "No se pudo localizar el ejecutable X-13ARIMA-SEATS. "
+                f"Detalle técnico: {type(e).__name__}"
+            ),
+        }
+
+    # Si hay ceros/negativos, X-13 no puede usar transformación log.
+    log_x13 = None if (x > 0).all() else False
+
+    try:
+        resultado = x13_arima_analysis(
+            x,
+            x12path=x13_path,
+            prefer_x13=True,
+            log=log_x13,
+            outlier=True,
+            trading=False,
+            retspec=True,
+        )
+
+        return {
+            "ok": True,
+            "ajustada": resultado.seasadj,
+            "tendencia": resultado.trend,
+            "irregular": resultado.irregular,
+            "spec": getattr(resultado, "spec", ""),
+            "log_auto_permitido": log_x13 is None,
+        }
+
+    except Exception as e:
+        return {
+            "ok": False,
+            "mensaje": (
+                "X-13ARIMA-SEATS no pudo completar el ajuste para la "
+                "muestra seleccionada. "
+                f"Detalle técnico: {type(e).__name__}"
+            ),
+        }
 
 
 # ============================================================
@@ -820,16 +887,12 @@ st.caption(
 # ============================================================
 # 15. AJUSTE ESTACIONAL
 # ============================================================
-# El ajuste es una decisión explícita del usuario.
+# El usuario decide si quiere trabajar con:
+#   - la serie original, o
+#   - la serie ajustada por X-13ARIMA-SEATS.
 #
-# Si se activa:
-#   X_t = serie ajustada estacionalmente
-#
-# Si no se activa:
-#   X_t = serie original
-#
-# A partir de esta decisión, TODO el análisis posterior se realiza
-# sobre X_t: transformaciones, estadísticos, ACF/PACF, ADF, KPSS,
+# Si selecciona la ajustada, TODO lo posterior usa esa serie:
+# transformaciones, descriptivos, ACF/PACF, ADF/KPSS,
 # orden de integración y descargas.
 # ============================================================
 
@@ -842,78 +905,94 @@ st.markdown(
     """
     <div class="ap-note">
     Algunas series trimestrales pueden presentar patrones estacionales.
-    Puedes comparar la serie original con una versión ajustada antes de
-    continuar con el análisis.
+    Puedes comparar la serie original con una versión ajustada mediante
+    <b>X-13ARIMA-SEATS</b> antes de continuar con el análisis.
     </div>
     """,
     unsafe_allow_html=True,
 )
 
-ajustada, componente_estacional = ajuste_estacional_stl(
-    df["PBI_original"],
-    periodo=4,
+usar_ajustada = st.checkbox(
+    "Calcular y utilizar la serie ajustada estacionalmente con X-13ARIMA-SEATS",
+    value=False,
 )
 
-ajuste_disponible = ajustada is not None
+resultado_x13 = None
+ajuste_disponible = False
 
-if ajuste_disponible:
-    df["PBI_ajustado"] = np.nan
-    df.loc[ajustada.index, "PBI_ajustado"] = ajustada.values
-
-    fig_sa = go.Figure()
-
-    fig_sa.add_trace(
-        go.Scatter(
-            x=df["fecha"],
-            y=df["PBI_original"],
-            mode="lines",
-            name="Original",
+if usar_ajustada:
+    with st.spinner("Calculando ajuste estacional X-13ARIMA-SEATS..."):
+        resultado_x13 = ajuste_estacional_x13(
+            df["fecha"],
+            df["PBI_original"],
         )
-    )
 
-    fig_sa.add_trace(
-        go.Scatter(
-            x=df["fecha"],
-            y=df["PBI_ajustado"],
-            mode="lines",
-            name="Ajustada estacionalmente (STL)",
+    if resultado_x13["ok"]:
+        ajuste_disponible = True
+
+        # Alinear resultados X-13 con las fechas de la muestra.
+        sa = resultado_x13["ajustada"].copy()
+        sa.index = pd.DatetimeIndex(sa.index)
+
+        trend = resultado_x13["tendencia"].copy()
+        trend.index = pd.DatetimeIndex(trend.index)
+
+        irregular = resultado_x13["irregular"].copy()
+        irregular.index = pd.DatetimeIndex(irregular.index)
+
+        df["PBI_ajustado"] = df["fecha"].map(sa)
+        df["PBI_tendencia_x13"] = df["fecha"].map(trend)
+        df["PBI_irregular_x13"] = df["fecha"].map(irregular)
+
+        fig_sa = go.Figure()
+
+        fig_sa.add_trace(
+            go.Scatter(
+                x=df["fecha"],
+                y=df["PBI_original"],
+                mode="lines",
+                name="Original",
+            )
         )
-    )
 
-    fig_sa.update_layout(
-        template="plotly_white",
-        height=420,
-        margin=dict(l=20, r=15, t=20, b=30),
-        hovermode="x unified",
-        xaxis_title="",
-        yaxis_title=SERIE["unidad"],
-        legend=dict(orientation="h"),
-    )
+        fig_sa.add_trace(
+            go.Scatter(
+                x=df["fecha"],
+                y=df["PBI_ajustado"],
+                mode="lines",
+                name="Ajustada X-13",
+            )
+        )
 
-    st.plotly_chart(
-        fig_sa,
-        use_container_width=True,
-        config={"displayModeBar": False},
-    )
+        fig_sa.update_layout(
+            template="plotly_white",
+            height=420,
+            margin=dict(l=20, r=15, t=20, b=30),
+            hovermode="x unified",
+            xaxis_title="",
+            yaxis_title=SERIE["unidad"],
+            legend=dict(orientation="h"),
+        )
 
-    usar_ajustada = st.checkbox(
-        "Utilizar la serie ajustada estacionalmente para todo el análisis posterior",
-        value=False,
-    )
+        st.plotly_chart(
+            fig_sa,
+            use_container_width=True,
+            config={"displayModeBar": False},
+        )
 
-else:
-    usar_ajustada = False
+        st.success(
+            "A partir de este punto, el análisis utiliza la serie "
+            "ajustada estacionalmente con X-13ARIMA-SEATS."
+        )
 
-    st.info(
-        "La muestra seleccionada es demasiado corta para realizar el ajuste "
-        "estacional trimestral con el criterio establecido. El análisis "
-        "continuará con la serie original."
-    )
+    else:
+        usar_ajustada = False
+        st.warning(resultado_x13["mensaje"])
 
-# Definición explícita de la serie base.
+# Definición de la serie base para TODO el análisis posterior.
 if usar_ajustada and ajuste_disponible:
     df["PBI"] = df["PBI_ajustado"]
-    nombre_base = "Ajustada estacionalmente (STL)"
+    nombre_base = "Ajustada estacionalmente (X-13ARIMA-SEATS)"
     base_ajustada = True
 else:
     df["PBI"] = df["PBI_original"]
@@ -928,13 +1007,6 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-
-if base_ajustada:
-    st.caption(
-        "El ajuste STL es un cálculo exploratorio de Análisis Perú. "
-        "Debe distinguirse de cualquier serie oficialmente desestacionalizada."
-    )
-
 
 # ============================================================
 # 16. TRANSFORMACIONES DE LA SERIE BASE
@@ -1289,7 +1361,7 @@ nombres_tabla = {
 
 if ajuste_disponible:
     columnas_tabla.append("PBI_ajustado")
-    nombres_tabla["PBI_ajustado"] = "Serie ajustada STL"
+    nombres_tabla["PBI_ajustado"] = "Serie ajustada X-13"
 
 columnas_tabla += [
     "PBI",
@@ -1377,7 +1449,7 @@ especificacion = pd.DataFrame(
             len(df),
             nombre_base,
             (
-                "STL, periodo 4"
+                "X-13ARIMA-SEATS"
                 if base_ajustada
                 else "No aplicado"
             ),

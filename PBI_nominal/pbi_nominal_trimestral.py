@@ -466,7 +466,7 @@ def grafico_correlacion(df_corr, titulo):
     fig.add_hline(y=0, line_width=1)
 
     fig.update_layout(
-        title=title,
+        title=titulo,
         height=330,
         margin=dict(l=20, r=15, t=45, b=30),
         xaxis_title="Rezago",

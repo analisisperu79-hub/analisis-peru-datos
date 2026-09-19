@@ -783,13 +783,173 @@ if aplicar:
 idx_i = periodos.index(st.session_state.pbi_inicio)
 idx_f = periodos.index(st.session_state.pbi_fin)
 
+# Muestra original elegida por el usuario.
 df = df_total.iloc[idx_i:idx_f + 1].copy()
+df["PBI_original"] = df["PBI"]
+
+
+# ============================================================
+# 14. SERIE ORIGINAL
+# ============================================================
+# Primero se muestra únicamente la serie original.
+# Todavía no se aplican logaritmos, diferencias ni pruebas.
+# ============================================================
+
+st.markdown(
+    '<div class="ap-section-title">Serie original</div>',
+    unsafe_allow_html=True,
+)
+
+st.plotly_chart(
+    grafico_serie(
+        df,
+        "PBI_original",
+        SERIE["unidad"],
+    ),
+    use_container_width=True,
+    config={"displayModeBar": False},
+)
+
+st.caption(
+    "Esta es la serie original correspondiente al intervalo seleccionado. "
+    "Antes de realizar transformaciones o pruebas, puedes decidir si trabajar "
+    "con la serie original o con una versión ajustada estacionalmente."
+)
+
+
+# ============================================================
+# 15. AJUSTE ESTACIONAL
+# ============================================================
+# El ajuste es una decisión explícita del usuario.
+#
+# Si se activa:
+#   X_t = serie ajustada estacionalmente
+#
+# Si no se activa:
+#   X_t = serie original
+#
+# A partir de esta decisión, TODO el análisis posterior se realiza
+# sobre X_t: transformaciones, estadísticos, ACF/PACF, ADF, KPSS,
+# orden de integración y descargas.
+# ============================================================
+
+st.markdown(
+    '<div class="ap-section-title">Ajuste estacional</div>',
+    unsafe_allow_html=True,
+)
+
+st.markdown(
+    """
+    <div class="ap-note">
+    Algunas series trimestrales pueden presentar patrones estacionales.
+    Puedes comparar la serie original con una versión ajustada antes de
+    continuar con el análisis.
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+ajustada, componente_estacional = ajuste_estacional_stl(
+    df["PBI_original"],
+    periodo=4,
+)
+
+ajuste_disponible = ajustada is not None
+
+if ajuste_disponible:
+    df["PBI_ajustado"] = np.nan
+    df.loc[ajustada.index, "PBI_ajustado"] = ajustada.values
+
+    fig_sa = go.Figure()
+
+    fig_sa.add_trace(
+        go.Scatter(
+            x=df["fecha"],
+            y=df["PBI_original"],
+            mode="lines",
+            name="Original",
+        )
+    )
+
+    fig_sa.add_trace(
+        go.Scatter(
+            x=df["fecha"],
+            y=df["PBI_ajustado"],
+            mode="lines",
+            name="Ajustada estacionalmente (STL)",
+        )
+    )
+
+    fig_sa.update_layout(
+        template="plotly_white",
+        height=420,
+        margin=dict(l=20, r=15, t=20, b=30),
+        hovermode="x unified",
+        xaxis_title="",
+        yaxis_title=SERIE["unidad"],
+        legend=dict(orientation="h"),
+    )
+
+    st.plotly_chart(
+        fig_sa,
+        use_container_width=True,
+        config={"displayModeBar": False},
+    )
+
+    usar_ajustada = st.checkbox(
+        "Utilizar la serie ajustada estacionalmente para todo el análisis posterior",
+        value=False,
+    )
+
+else:
+    usar_ajustada = False
+
+    st.info(
+        "La muestra seleccionada es demasiado corta para realizar el ajuste "
+        "estacional trimestral con el criterio establecido. El análisis "
+        "continuará con la serie original."
+    )
+
+# Definición explícita de la serie base.
+if usar_ajustada and ajuste_disponible:
+    df["PBI"] = df["PBI_ajustado"]
+    nombre_base = "Ajustada estacionalmente (STL)"
+    base_ajustada = True
+else:
+    df["PBI"] = df["PBI_original"]
+    nombre_base = "Original"
+    base_ajustada = False
+
+st.markdown(
+    f"""
+    <div class="ap-note">
+    <b>Serie utilizada a partir de este punto:</b> {nombre_base}.
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+if base_ajustada:
+    st.caption(
+        "El ajuste STL es un cálculo exploratorio de Análisis Perú. "
+        "Debe distinguirse de cualquier serie oficialmente desestacionalizada."
+    )
+
+
+# ============================================================
+# 16. TRANSFORMACIONES DE LA SERIE BASE
+# ============================================================
+# Las transformaciones se calculan DESPUÉS de fijar la serie base.
+#
+# Regla estricta para logaritmos:
+#     ln(X) solo existe si TODAS las observaciones de X son > 0.
+#
+# Nunca se usa:
+#     ln(abs(X))
+#     ln(X + constante)
+# ============================================================
+
 df, log_disponible = preparar_transformaciones(df)
-
-
-# ============================================================
-# 14. ADVERTENCIA DE LOGARITMOS
-# ============================================================
 
 if not log_disponible:
     cantidad_no_positivos = int((df["PBI"] <= 0).sum())
@@ -798,18 +958,56 @@ if not log_disponible:
         f"""
         <div class="ap-note">
         <b>Transformaciones logarítmicas no disponibles para esta muestra.</b><br>
-        Se encontraron {cantidad_no_positivos} observación(es) con valor igual
-        o menor que cero. Por seguridad, la aplicación no calcula
-        ln(X), Δln(X) ni 100×Δln(X). No se aplican valores absolutos ni
-        constantes artificiales.
+        La serie base contiene {cantidad_no_positivos} observación(es) con
+        valor igual o menor que cero. Por seguridad, no se calculan
+        ln(X), Δln(X) ni 100×Δln(X). Tampoco se aplican valores absolutos
+        ni constantes artificiales.
         </div>
         """,
         unsafe_allow_html=True,
     )
 
+st.markdown(
+    '<div class="ap-section-title">Transformaciones</div>',
+    unsafe_allow_html=True,
+)
+
+opciones_transformacion = {
+    "Nivel: X": ("PBI", SERIE["unidad"]),
+    "Primera diferencia: ΔX": ("d_PBI", f"Δ {SERIE['unidad']}"),
+}
+
+if log_disponible:
+    opciones_transformacion.update(
+        {
+            "Logaritmo: ln(X)": ("ln_PBI", "ln(X)"),
+            "Diferencia logarítmica: Δln(X)": ("d_ln_PBI", "Δln(X)"),
+            "100 × Δln(X)": ("100_d_ln_PBI", "100 × Δln(X)"),
+        }
+    )
+
+transformacion_elegida = st.selectbox(
+    "Transformación",
+    list(opciones_transformacion.keys()),
+)
+
+columna_grafico, etiqueta_grafico = opciones_transformacion[
+    transformacion_elegida
+]
+
+st.plotly_chart(
+    grafico_serie(
+        df,
+        columna_grafico,
+        etiqueta_grafico,
+    ),
+    use_container_width=True,
+    config={"displayModeBar": False},
+)
+
 
 # ============================================================
-# 15. RESUMEN DE LA MUESTRA
+# 17. RESUMEN DE LA SERIE BASE
 # ============================================================
 
 st.markdown(
@@ -833,126 +1031,27 @@ metricas = [
 for bloque in range(0, len(metricas), 4):
     columnas = st.columns(4)
 
-    for col, (nombre, valor) in zip(columnas, metricas[bloque:bloque + 4]):
+    for col, (nombre, valor) in zip(
+        columnas,
+        metricas[bloque:bloque + 4],
+    ):
         if nombre == "Observaciones":
             texto = f"{int(valor)}" if valor is not None else "—"
         else:
-            texto = "—" if valor is None or pd.isna(valor) else f"{valor:,.4f}"
+            texto = (
+                "—"
+                if valor is None or pd.isna(valor)
+                else f"{valor:,.4f}"
+            )
 
         col.metric(nombre, texto)
 
 
 # ============================================================
-# 16. VISUALIZACIÓN Y TRANSFORMACIONES
-# ============================================================
-
-st.markdown(
-    '<div class="ap-section-title">Visualización</div>',
-    unsafe_allow_html=True,
-)
-
-opciones_transformacion = {
-    "Nivel: X": ("PBI", SERIE["unidad"]),
-    "Primera diferencia: ΔX": ("d_PBI", f"Δ {SERIE['unidad']}"),
-}
-
-if log_disponible:
-    opciones_transformacion.update(
-        {
-            "Logaritmo: ln(X)": ("ln_PBI", "ln(X)"),
-            "Diferencia logarítmica: Δln(X)": ("d_ln_PBI", "Δln(X)"),
-            "100 × Δln(X)": ("100_d_ln_PBI", "100 × Δln(X)"),
-        }
-    )
-
-transformacion_elegida = st.selectbox(
-    "Transformación",
-    list(opciones_transformacion.keys()),
-)
-
-columna_grafico, etiqueta_grafico = opciones_transformacion[transformacion_elegida]
-
-st.plotly_chart(
-    grafico_serie(
-        df,
-        columna_grafico,
-        etiqueta_grafico,
-    ),
-    use_container_width=True,
-    config={"displayModeBar": False},
-)
-
-
-# ============================================================
-# 17. AJUSTE ESTACIONAL EXPLORATORIO
-# ============================================================
-
-st.markdown(
-    '<div class="ap-section-title">Ajuste estacional</div>',
-    unsafe_allow_html=True,
-)
-
-mostrar_ajuste = st.checkbox(
-    "Mostrar ajuste estacional exploratorio con STL",
-    value=False,
-)
-
-if mostrar_ajuste:
-    ajustada, componente_estacional = ajuste_estacional_stl(df["PBI"], periodo=4)
-
-    if ajustada is None:
-        st.info(
-            "La muestra es demasiado corta para mostrar un ajuste estacional "
-            "trimestral estable. Selecciona un intervalo más amplio."
-        )
-    else:
-        df_ajuste = df.loc[ajustada.index, ["fecha", "PBI"]].copy()
-        df_ajuste["PBI_ajustado"] = ajustada.values
-
-        fig_sa = go.Figure()
-
-        fig_sa.add_trace(
-            go.Scatter(
-                x=df_ajuste["fecha"],
-                y=df_ajuste["PBI"],
-                mode="lines",
-                name="Original",
-            )
-        )
-
-        fig_sa.add_trace(
-            go.Scatter(
-                x=df_ajuste["fecha"],
-                y=df_ajuste["PBI_ajustado"],
-                mode="lines",
-                name="Ajustada STL",
-            )
-        )
-
-        fig_sa.update_layout(
-            template="plotly_white",
-            height=420,
-            margin=dict(l=20, r=15, t=20, b=30),
-            hovermode="x unified",
-            xaxis_title="",
-            yaxis_title=SERIE["unidad"],
-            legend=dict(orientation="h"),
-        )
-
-        st.plotly_chart(
-            fig_sa,
-            use_container_width=True,
-            config={"displayModeBar": False},
-        )
-
-        st.caption(
-            "El ajuste STL es exploratorio y calculado por Análisis Perú. "
-            "No sustituye una serie oficialmente desestacionalizada."
-        )
-
-
-# ============================================================
 # 18. DINÁMICA TEMPORAL — ACF / PACF
+# ============================================================
+# Se calculan sobre la TRANSFORMACIÓN elegida por el usuario,
+# la cual a su vez proviene de la SERIE BASE elegida.
 # ============================================================
 
 st.markdown(
@@ -960,11 +1059,13 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ACF/PACF se aplican a la transformación visual seleccionada.
 serie_dinamica = df[columna_grafico].dropna()
 
 if len(serie_dinamica) >= 8:
-    max_lags = max(1, min(20, len(serie_dinamica) // 2 - 1))
+    max_lags = max(
+        1,
+        min(20, len(serie_dinamica) // 2 - 1),
+    )
 
     lags_acf = st.slider(
         "Rezagos para ACF / PACF",
@@ -993,6 +1094,7 @@ if len(serie_dinamica) >= 8:
             use_container_width=True,
             config={"displayModeBar": False},
         )
+
 else:
     st.info(
         "La muestra seleccionada es demasiado corta para mostrar ACF y PACF."
@@ -1010,7 +1112,7 @@ st.markdown(
 
 c1, c2, c3 = st.columns(3)
 
-# Base sobre la que se estudia el orden de integración.
+# La base para las pruebas siempre nace de la serie base elegida.
 bases_prueba = {
     "Nivel: X": "PBI",
 }
@@ -1043,12 +1145,16 @@ regression = REG_MAP[deterministico_label]
 rezagos_manual = None
 
 if metodo_adf == "Manual":
-    # Tope prudente para muestra trimestral.
+    columna_para_rezagos = bases_prueba[base_prueba_label]
+
     max_rezagos_manual = max(
         0,
         min(
             12,
-            max(0, len(df[bases_prueba[base_prueba_label]].dropna()) // 4),
+            max(
+                0,
+                len(df[columna_para_rezagos].dropna()) // 4,
+            ),
         ),
     )
 
@@ -1061,7 +1167,7 @@ if metodo_adf == "Manual":
     )
 
 st.caption(
-    "KPSS usa selección automática de bandwidth/rezagos. "
+    "KPSS utiliza selección automática de bandwidth/rezagos. "
     "ADF permite AIC, BIC o selección manual."
 )
 
@@ -1084,7 +1190,6 @@ resultado_integracion = diagnosticar_integracion(
     regression,
 )
 
-# Resumen
 r1, r2, r3 = st.columns(3)
 
 r1.metric(
@@ -1102,7 +1207,6 @@ r3.metric(
     resultado_integracion["orden"],
 )
 
-# Tabla técnica siempre visible: sin expander para no cambiar el iframe.
 resultados_pruebas = pd.DataFrame(
     [
         {
@@ -1157,9 +1261,10 @@ st.dataframe(
 )
 
 st.caption(
-    "El diagnóstico corresponde exclusivamente a la muestra y "
-    "especificación seleccionadas. Cambiar el intervalo, los rezagos "
-    "o el componente determinístico puede modificar los resultados."
+    "El diagnóstico corresponde exclusivamente a la muestra, serie base "
+    "y especificación seleccionadas. Cambiar el intervalo, el ajuste "
+    "estacional, los rezagos o el componente determinístico puede modificar "
+    "los resultados."
 )
 
 
@@ -1174,15 +1279,29 @@ st.markdown(
 
 columnas_tabla = [
     "periodo",
-    "PBI",
-    "d_PBI",
+    "PBI_original",
 ]
 
 nombres_tabla = {
     "periodo": "Periodo",
-    "PBI": "X",
-    "d_PBI": "ΔX",
+    "PBI_original": "Serie original",
 }
+
+if ajuste_disponible:
+    columnas_tabla.append("PBI_ajustado")
+    nombres_tabla["PBI_ajustado"] = "Serie ajustada STL"
+
+columnas_tabla += [
+    "PBI",
+    "d_PBI",
+]
+
+nombres_tabla.update(
+    {
+        "PBI": "X usada en análisis",
+        "d_PBI": "ΔX",
+    }
+)
 
 if log_disponible:
     columnas_tabla += [
@@ -1221,13 +1340,10 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ---------- CSV ----------
 csv_bytes = tabla_datos.to_csv(
     index=False,
 ).encode("utf-8-sig")
 
-
-# ---------- Hoja de especificación ----------
 especificacion = pd.DataFrame(
     {
         "Parámetro": [
@@ -1239,7 +1355,10 @@ especificacion = pd.DataFrame(
             "Periodo inicial",
             "Periodo final",
             "Observaciones",
+            "Serie utilizada en el análisis",
+            "Método de ajuste estacional",
             "Logaritmos disponibles",
+            "Transformación visual seleccionada",
             "Serie base ADF/KPSS",
             "Método de rezagos ADF",
             "Rezagos manuales ADF",
@@ -1256,7 +1375,14 @@ especificacion = pd.DataFrame(
             st.session_state.pbi_inicio,
             st.session_state.pbi_fin,
             len(df),
+            nombre_base,
+            (
+                "STL, periodo 4"
+                if base_ajustada
+                else "No aplicado"
+            ),
             "Sí" if log_disponible else "No",
+            transformacion_elegida,
             base_prueba_label,
             metodo_adf,
             (
@@ -1271,8 +1397,6 @@ especificacion = pd.DataFrame(
     }
 )
 
-
-# ---------- Excel ----------
 buffer_excel = BytesIO()
 
 with pd.ExcelWriter(
@@ -1299,7 +1423,6 @@ with pd.ExcelWriter(
 
 excel_bytes = buffer_excel.getvalue()
 
-
 d1, d2 = st.columns(2)
 
 d1.download_button(
@@ -1320,6 +1443,6 @@ d2.download_button(
 
 st.caption(
     "Fuente de la serie: INEI / BCRP. "
-    "Resultados econométricos calculados por Análisis Perú "
-    "sobre el intervalo seleccionado."
+    "Resultados calculados por Análisis Perú sobre la muestra y "
+    "serie base seleccionadas."
 )

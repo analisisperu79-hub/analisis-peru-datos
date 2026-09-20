@@ -370,20 +370,52 @@ def resultado_simple_prueba(prueba, p):
 
 def calcular_acf_pacf(serie, nlags):
     x = pd.Series(serie).dropna().astype(float)
+
     if len(x) < 8:
         return None, None
+
     nlags = max(1, min(nlags, len(x)//2 - 1))
-    av, aci = acf(x, nlags=nlags, alpha=.05, fft=True)
-    pv, pci = pacf(x, nlags=nlags, alpha=.05, method="ywm")
-    da = pd.DataFrame({"rezago":range(len(av)),"valor":av,"lim_inf":aci[:,0]-av,"lim_sup":aci[:,1]-av})
-    dp = pd.DataFrame({"rezago":range(len(pv)),"valor":pv,"lim_inf":pci[:,0]-pv,"lim_sup":pci[:,1]-pv})
+
+    av, aci = acf(
+        x,
+        nlags=nlags,
+        alpha=.05,
+        fft=True,
+    )
+
+    pv, pci = pacf(
+        x,
+        nlags=nlags,
+        alpha=.05,
+        method="ywm",
+    )
+
+    da = pd.DataFrame({
+        "rezago": range(len(av)),
+        "valor": av,
+        "lim_inf": aci[:, 0] - av,
+        "lim_sup": aci[:, 1] - av,
+    })
+
+    dp = pd.DataFrame({
+        "rezago": range(len(pv)),
+        "valor": pv,
+        "lim_inf": pci[:, 0] - pv,
+        "lim_sup": pci[:, 1] - pv,
+    })
+
+    # El rezago 0 no se muestra porque su autocorrelación es 1
+    # por definición. La visualización comienza en el rezago 1.
+    da = da[da["rezago"] >= 1].reset_index(drop=True)
+    dp = dp[dp["rezago"] >= 1].reset_index(drop=True)
+
     return da, dp
 
 def grafico_correlacion(df_corr, titulo):
     fig = go.Figure()
     if df_corr is not None and len(df_corr):
-        li = float(df_corr["lim_inf"].iloc[1:].mean()) if len(df_corr)>1 else 0
-        ls = float(df_corr["lim_sup"].iloc[1:].mean()) if len(df_corr)>1 else 0
+        li = float(df_corr["lim_inf"].mean()) if len(df_corr)>1 else 0
+        ls = float(df_corr["lim_sup"].mean()) if len(df_corr)>1 else 0
         fig.add_hrect(y0=li,y1=ls,fillcolor="rgba(120,120,120,.12)",line_width=0)
         for _,r in df_corr.iterrows():
             fig.add_shape(type="line",x0=r["rezago"],x1=r["rezago"],y0=0,y1=r["valor"],line=dict(width=2))

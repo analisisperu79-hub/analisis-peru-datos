@@ -877,9 +877,36 @@ else:
     eviews["date"] = pd.to_datetime(df["fecha"]).dt.year.astype(str)
     eviews["year"] = pd.to_datetime(df["fecha"]).dt.year.astype(int).to_numpy()
 
+# Nombres especialmente simples para EViews.
+# Esto evita problemas observados al ejecutar X-12/X-13 sobre
+# objetos importados con nombres más largos como pbi_original.
+eviews_name_map = {}
+
+# Serie original -> nombre corto simple, por ejemplo: pbi
+if col_original_export in datos_exportar.columns:
+    eviews_name_map[col_original_export] = nombre_var_export
+
+# Serie ajustada -> pbi_sa
+if col_ajustada_export in datos_exportar.columns:
+    eviews_name_map[col_ajustada_export] = f"{nombre_var_export}_sa"
+
+# Logaritmo -> ln_pbi
+if col_log_export in datos_exportar.columns:
+    eviews_name_map[col_log_export] = f"ln_{nombre_var_export}"
+
+# Primera diferencia, si existe:
+if nombre_diferencia_export is not None and nombre_diferencia_export in datos_exportar.columns:
+    if nombre_diferencia_export.startswith("d_ln_"):
+        eviews_name_map[nombre_diferencia_export] = f"d_ln_{nombre_var_export}"
+    else:
+        eviews_name_map[nombre_diferencia_export] = f"d_{nombre_var_export}"
+
 for col in datos_exportar.columns:
-    if col != "periodo":
-        eviews[col] = datos_exportar[col].to_numpy()
+    if col == "periodo":
+        continue
+
+    nombre_eviews = eviews_name_map.get(col, col)
+    eviews[nombre_eviews] = datos_exportar[col].to_numpy()
 
 # UTF-8 sin BOM para evitar caracteres invisibles en el primer encabezado.
 # Limpiar encabezados por seguridad.
@@ -1092,17 +1119,20 @@ elif formato_descarga == "EViews":
     if FREQ == "Q":
         st.caption(
             "Archivo trimestral con date=YYYYQ#, year y quarter. "
-            "Se exporta con formato CSV de Windows (CRLF) para evitar "
-            "caracteres invisibles al importar y usar X-12/X-13 en EViews."
+            "Las variables usan nombres simples para EViews: por ejemplo "
+            "pbi, pbi_sa, ln_pbi, d_pbi o d_ln_pbi. "
+            "Se exporta en CSV de Windows (CRLF)."
         )
     elif FREQ == "M":
         st.caption(
             "Archivo mensual con date=YYYYM##, year y month. "
-            "Está diseñado para crear/reconocer un workfile mensual en EViews."
+            "Las variables usan nombres simples para EViews: variable, "
+            "variable_sa, ln_variable, d_variable o d_ln_variable."
         )
     else:
         st.caption(
-            "Archivo anual con date=YYYY y year."
+            "Archivo anual con date=YYYY y year. "
+            "Las variables usan nombres simples compatibles con EViews."
         )
 
 elif formato_descarga == "Stata":

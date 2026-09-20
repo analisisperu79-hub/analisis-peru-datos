@@ -1137,7 +1137,7 @@ formato_descarga = st.selectbox(
 
 if formato_descarga == "CSV universal":
     st.download_button(
-        "Descargar CSV universal",
+        "Descargar CSV",
         data=universal_csv,
         file_name=f"{slug}_universal.csv",
         mime="text/csv",

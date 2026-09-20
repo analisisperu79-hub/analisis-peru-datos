@@ -206,16 +206,7 @@ def preparar_transformaciones(df, columna):
 
 def estadisticos_descriptivos(serie):
     """
-    Estadísticos descriptivos usando convenciones compatibles con Stata
-    para asimetría y curtosis.
-
-    Stata summarize, detail usa:
-        skewness = m3 / m2^(3/2)
-        kurtosis = m4 / m2^2
-
-    Por tanto:
-    - una distribución normal tiene curtosis = 3;
-    - NO se reporta exceso de curtosis.
+    Estadísticos descriptivos básicos mostrados en la interfaz.
     """
     x = pd.Series(serie).dropna().astype(float)
 
@@ -223,31 +214,14 @@ def estadisticos_descriptivos(serie):
         return {}
 
     n = x.size
-    media = x.mean()
-
-    m2 = np.mean((x - media) ** 2) if n >= 2 else np.nan
-    m3 = np.mean((x - media) ** 3) if n >= 3 else np.nan
-    m4 = np.mean((x - media) ** 4) if n >= 4 else np.nan
-
-    if n >= 3 and pd.notna(m2) and m2 > 0:
-        asimetria = m3 / (m2 ** 1.5)
-    else:
-        asimetria = np.nan
-
-    if n >= 4 and pd.notna(m2) and m2 > 0:
-        curtosis = m4 / (m2 ** 2)
-    else:
-        curtosis = np.nan
 
     return {
         "Observaciones": int(n),
-        "Media": float(media),
+        "Media": float(x.mean()),
         "Mediana": float(x.median()),
         "Desv. estándar": float(x.std(ddof=1)) if n > 1 else np.nan,
         "Mínimo": float(x.min()),
         "Máximo": float(x.max()),
-        "Asimetría": float(asimetria) if pd.notna(asimetria) else np.nan,
-        "Curtosis": float(curtosis) if pd.notna(curtosis) else np.nan,
     }
 
 
@@ -1162,25 +1136,25 @@ excel_bytes = excel_buffer.getvalue()
 formato_descarga = st.selectbox(
     "Formato de descarga",
     [
-        "CSV universal",
+        "CSV",
         "Excel",
         "Stata / EViews (.dta)",
         "R / Python",
     ],
 )
 
-if formato_descarga == "CSV universal":
+if formato_descarga == "CSV":
     st.download_button(
-        "Descargar CSV universal",
+        "Descargar CSV",
         data=universal_csv,
-        file_name=f"{slug}_universal.csv",
+        file_name=f"{slug}.csv",
         mime="text/csv",
         use_container_width=True,
     )
 
     st.caption(
-        "Incluye solo el periodo amigable (por ejemplo 2000tri1 o 2000mes1) "
-        "y las variables de la base. No incluye fecha, anio ni trimestre/mes."
+        "Archivo CSV con el periodo y las variables de la base. "
+        "No incluye fecha, anio ni trimestre/mes."
     )
 
 elif formato_descarga == "Excel":

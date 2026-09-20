@@ -91,6 +91,114 @@ st.markdown(
       .ap-note {font-size:.90rem; line-height:1.45; padding:.75rem .9rem; border-left:4px solid #376ea6; background:#f7f9fc; margin:.6rem 0 .8rem 0;}
       [data-testid="stDataFrame"] {border:1px solid #e7eaf0; border-radius:8px;}
       .stButton>button, .stDownloadButton>button, div[data-testid="stFormSubmitButton"] button {border-radius:8px;}
+
+      /* Responsive general */
+      html, body, [data-testid="stAppViewContainer"], .stApp {
+          overflow-x:hidden;
+      }
+
+      [data-testid="stPlotlyChart"],
+      [data-testid="stDataFrame"],
+      [data-testid="stTable"] {
+          width:100% !important;
+          max-width:100% !important;
+      }
+
+      [data-testid="stDataFrame"] > div {
+          overflow-x:auto !important;
+      }
+
+      .stDownloadButton button,
+      .stButton button {
+          min-height:2.6rem;
+      }
+
+      /* Celular */
+      @media (max-width:768px) {
+          .block-container {
+              max-width:100% !important;
+              padding-top:.45rem !important;
+              padding-left:.55rem !important;
+              padding-right:.55rem !important;
+              padding-bottom:.8rem !important;
+          }
+
+          h1 {
+              font-size:1.45rem !important;
+              line-height:1.2 !important;
+          }
+
+          h2 {
+              font-size:1.20rem !important;
+              line-height:1.25 !important;
+          }
+
+          h3 {
+              font-size:1.05rem !important;
+              line-height:1.25 !important;
+          }
+
+          .ap-section-title {
+              font-size:1rem !important;
+              margin-top:1rem !important;
+              margin-bottom:.45rem !important;
+          }
+
+          .ap-note {
+              font-size:.82rem !important;
+              padding:.65rem .7rem !important;
+          }
+
+          [data-testid="stMetricValue"] {
+              font-size:1.12rem !important;
+          }
+
+          [data-testid="stMetricLabel"] {
+              font-size:.78rem !important;
+          }
+
+          /* Apilar columnas en móvil */
+          [data-testid="stHorizontalBlock"] {
+              flex-wrap:wrap !important;
+              gap:.5rem !important;
+          }
+
+          [data-testid="column"] {
+              min-width:100% !important;
+              width:100% !important;
+              flex:1 1 100% !important;
+          }
+
+          [data-testid="stSelectbox"],
+          [data-testid="stNumberInput"],
+          [data-testid="stRadio"],
+          [data-testid="stCheckbox"],
+          [data-testid="stDownloadButton"] {
+              width:100% !important;
+          }
+
+          .stDownloadButton button,
+          .stButton button {
+              width:100% !important;
+          }
+
+          [data-testid="stDataFrame"] {
+              font-size:.78rem !important;
+          }
+      }
+
+      /* Tablet */
+      @media (min-width:769px) and (max-width:1024px) {
+          .block-container {
+              max-width:100% !important;
+              padding-left:.9rem !important;
+              padding-right:.9rem !important;
+          }
+
+          [data-testid="stMetricValue"] {
+              font-size:1.3rem !important;
+          }
+      }
     </style>
     """,
     unsafe_allow_html=True,
@@ -433,7 +541,7 @@ def grafico_correlacion(df_corr, titulo):
             fig.add_shape(type="line",x0=r["rezago"],x1=r["rezago"],y0=0,y1=r["valor"],line=dict(width=2))
         fig.add_trace(go.Scatter(x=df_corr["rezago"],y=df_corr["valor"],mode="markers",marker=dict(size=7),showlegend=False,hovertemplate="Rezago %{x}<br>Correlación %{y:.2f}<extra></extra>"))
     fig.add_hline(y=0,line_width=1)
-    fig.update_layout(title=titulo,height=330,margin=dict(l=20,r=15,t=45,b=30),xaxis_title="Rezago",yaxis_title="Correlación",yaxis_tickformat=".2f",template="plotly_white")
+    fig.update_layout(autosize=True, title=titulo,height=330,margin=dict(l=20,r=15,t=45,b=30),xaxis_title="Rezago",yaxis_title="Correlación",yaxis_tickformat=".2f",template="plotly_white")
     return fig
 
 # ============================================================
@@ -443,7 +551,7 @@ def grafico_correlacion(df_corr, titulo):
 def grafico_serie(df, columna, etiqueta_y):
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=df["fecha"],y=df[columna],mode="lines",name=etiqueta_y,hovertemplate="%{x}<br>%{y:,.2f}<extra></extra>"))
-    fig.update_layout(template="plotly_white",height=420,margin=dict(l=20,r=15,t=20,b=30),hovermode="x unified",xaxis_title="",yaxis_title=etiqueta_y,yaxis_tickformat=",.2f",showlegend=False)
+    fig.update_layout(autosize=True, template="plotly_white",height=420,margin=dict(l=20,r=15,t=20,b=30),hovermode="x unified",xaxis_title="",yaxis_title=etiqueta_y,yaxis_tickformat=",.2f",showlegend=False)
     return fig
 
 # ============================================================
@@ -543,7 +651,7 @@ if SERIE["permitir_ajuste_estacional"] and FREQ in ("M","Q"):
             fig = go.Figure()
             fig.add_trace(go.Scatter(x=df["fecha"],y=df[ORIGINAL],mode="lines",name="Original",hovertemplate="%{x}<br>%{y:,.2f}<extra></extra>"))
             fig.add_trace(go.Scatter(x=df["fecha"],y=df[AJUSTADA],mode="lines",name="Ajustada X-13",hovertemplate="%{x}<br>%{y:,.2f}<extra></extra>"))
-            fig.update_layout(template="plotly_white",height=420,margin=dict(l=20,r=15,t=20,b=30),hovermode="x unified",xaxis_title="",yaxis_title=SERIE["unidad"],yaxis_tickformat=",.2f",legend=dict(orientation="h"))
+            fig.update_layout(autosize=True, template="plotly_white",height=420,margin=dict(l=20,r=15,t=20,b=30),hovermode="x unified",xaxis_title="",yaxis_title=SERIE["unidad"],yaxis_tickformat=",.2f",legend=dict(orientation="h"))
             st.plotly_chart(fig,use_container_width=True,config={"displayModeBar":False},key="grafico_x13")
         else:
             usar_ajustada = False

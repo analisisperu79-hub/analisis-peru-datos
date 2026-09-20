@@ -1130,10 +1130,8 @@ formato_descarga = st.selectbox(
     [
         "CSV universal",
         "Excel",
-        "EViews",
-        "Stata",
-        "R",
-        "Python",
+        "Stata / EViews (.dta)",
+        "R / Python",
     ],
 )
 
@@ -1166,80 +1164,50 @@ elif formato_descarga == "Excel":
         "muestra periodo y las variables; no fecha, anio ni trimestre/mes."
     )
 
-elif formato_descarga == "EViews":
+elif formato_descarga == "Stata / EViews (.dta)":
     if stata_ok:
         st.download_button(
-            "Descargar para EViews (.dta)",
+            "Descargar .dta para Stata / EViews",
             data=stata_bytes,
-            file_name=f"{slug}_eviews.dta",
-            mime="application/octet-stream",
-            use_container_width=True,
-        )
-
-        st.caption(
-            "Formato .dta recomendado para EViews por su mejor compatibilidad "
-            "en nuestras pruebas. EViews puede abrirlo directamente y luego "
-            "trabajar con la estructura temporal de la base."
-        )
-    else:
-        st.error(
-            "No fue posible generar el archivo .dta en esta ejecución."
-        )
-
-elif formato_descarga == "Stata":
-    if stata_ok:
-        st.download_button(
-            "Descargar para Stata (.dta)",
-            data=stata_bytes,
-            file_name=f"{slug}_stata.dta",
+            file_name=f"{slug}_stata_eviews.dta",
             mime="application/octet-stream",
             use_container_width=True,
         )
 
         if FREQ == "Q":
             st.caption(
-                "La variable t ya contiene el índice trimestral de Stata. "
-                "En Stata: format t %tq  y luego  tsset t."
+                "Archivo .dta compatible con Stata y EViews. "
+                "En Stata, la variable t ya contiene el índice trimestral; "
+                "puedes usar: format t %tq  y luego  tsset t."
             )
         elif FREQ == "M":
             st.caption(
-                "La variable t ya contiene el índice mensual de Stata. "
-                "En Stata: format t %tm  y luego  tsset t."
+                "Archivo .dta compatible con Stata y EViews. "
+                "En Stata, la variable t ya contiene el índice mensual; "
+                "puedes usar: format t %tm  y luego  tsset t."
             )
         else:
             st.caption(
-                "Para frecuencia anual puedes usar: tsset year."
+                "Archivo .dta compatible con Stata y EViews. "
+                "Para frecuencia anual, en Stata puedes usar: tsset year."
             )
     else:
         st.error(
             "No fue posible generar el archivo .dta en esta ejecución."
         )
 
-elif formato_descarga == "R":
+elif formato_descarga == "R / Python":
     st.download_button(
-        "Descargar para R",
+        "Descargar para R / Python",
         data=r_csv,
-        file_name=f"{slug}_r.csv",
+        file_name=f"{slug}_r_python.csv",
         mime="text/csv",
         use_container_width=True,
     )
 
     st.caption(
-        "La columna fecha usa ISO YYYY-MM-DD y puede convertirse con "
-        "as.Date(fecha)."
-    )
-
-elif formato_descarga == "Python":
-    st.download_button(
-        "Descargar para Python",
-        data=python_csv,
-        file_name=f"{slug}_python.csv",
-        mime="text/csv",
-        use_container_width=True,
-    )
-
-    st.caption(
-        "La columna fecha usa ISO YYYY-MM-DD y puede convertirse con "
+        "La columna fecha usa formato ISO YYYY-MM-DD. "
+        "En R puedes convertirla con as.Date(fecha) y en Python con "
         "pandas.to_datetime(df['fecha'])."
     )
 

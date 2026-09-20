@@ -660,7 +660,7 @@ st.dataframe(
 
 
 # ============================================================
-# 23. DESCARGAS ESTANDARIZADAS
+# 23. DESCARGAS POR SOFTWARE
 # ============================================================
 
 st.markdown(
@@ -668,18 +668,9 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ------------------------------------------------------------
-# CSV UNIVERSAL
-# ------------------------------------------------------------
-
-csv_bytes = datos_exportar.to_csv(
-    index=False,
-).encode("utf-8-sig")
-
-
-# ------------------------------------------------------------
-# RESULTADOS ECONOMÉTRICOS CON NOMBRES SIMPLES
-# ------------------------------------------------------------
+# ============================================================
+# 23.1 RESULTADOS Y METADATOS COMUNES
+# ============================================================
 
 resultados_exportar = rp.copy()
 
@@ -692,11 +683,6 @@ resultados_exportar.columns = [
     "n",
     "resultado",
 ]
-
-
-# ------------------------------------------------------------
-# ESPECIFICACIÓN REPRODUCIBLE
-# ------------------------------------------------------------
 
 if columna_base == "ln_serie_base":
     transformacion_base_export = f"ln_{nombre_var_export}"
@@ -756,11 +742,6 @@ especificacion = pd.DataFrame({
     ],
 })
 
-
-# ------------------------------------------------------------
-# DICCIONARIO DE VARIABLES
-# ------------------------------------------------------------
-
 diccionario_filas = [
     {
         "variable": "periodo",
@@ -814,26 +795,215 @@ if usar_diff and nombre_diferencia_export is not None:
 
 diccionario_variables = pd.DataFrame(diccionario_filas)
 
+slug = re.sub(
+    r"[^a-zA-Z0-9_]+",
+    "_",
+    SERIE["nombre_corto"].lower(),
+).strip("_")
 
-# ------------------------------------------------------------
-# EXCEL LIMPIO Y COMPATIBLE
-# ------------------------------------------------------------
+
+# ============================================================
+# 23.2 BASE TEMPORAL COMÚN
+# ============================================================
+
+# Fecha ISO universal. R y Python la leen de forma muy natural.
+datos_iso = datos_exportar.copy()
+datos_iso.insert(
+    1,
+    "fecha",
+    pd.to_datetime(df["fecha"]).dt.strftime("%Y-%m-%d"),
+)
+
+# Componentes temporales explícitos.
+datos_iso.insert(
+    2,
+    "anio",
+    pd.to_datetime(df["fecha"]).dt.year.astype(int),
+)
+
+if FREQ == "Q":
+    datos_iso.insert(
+        3,
+        "trimestre",
+        pd.to_datetime(df["fecha"]).dt.quarter.astype(int),
+    )
+
+elif FREQ == "M":
+    datos_iso.insert(
+        3,
+        "mes",
+        pd.to_datetime(df["fecha"]).dt.month.astype(int),
+    )
+
+
+# ============================================================
+# 23.3 FORMATO EVIEWS
+# ============================================================
+# EViews recibe un archivo deliberadamente simple:
+#
+# Trimestral:
+#   date       year quarter variables...
+#   2003Q1     2003 1       ...
+#
+# Mensual:
+#   date       year month variables...
+#   2003M01    2003 1     ...
+#
+# Anual:
+#   date       year variables...
+#
+# Sin BOM, sin metadatos, sin hojas adicionales y sin nombres especiales.
+# ============================================================
+
+eviews = pd.DataFrame()
+
+if FREQ == "Q":
+    eviews["date"] = [
+        f"{d.year}Q{d.quarter}"
+        for d in pd.to_datetime(df["fecha"])
+    ]
+    eviews["year"] = pd.to_datetime(df["fecha"]).dt.year.astype(int)
+    eviews["quarter"] = pd.to_datetime(df["fecha"]).dt.quarter.astype(int)
+
+elif FREQ == "M":
+    eviews["date"] = [
+        f"{d.year}M{d.month:02d}"
+        for d in pd.to_datetime(df["fecha"])
+    ]
+    eviews["year"] = pd.to_datetime(df["fecha"]).dt.year.astype(int)
+    eviews["month"] = pd.to_datetime(df["fecha"]).dt.month.astype(int)
+
+else:
+    eviews["date"] = pd.to_datetime(df["fecha"]).dt.year.astype(str)
+    eviews["year"] = pd.to_datetime(df["fecha"]).dt.year.astype(int)
+
+for col in datos_exportar.columns:
+    if col != "periodo":
+        eviews[col] = datos_exportar[col].to_numpy()
+
+# UTF-8 sin BOM para evitar caracteres invisibles en el primer encabezado.
+eviews_csv = eviews.to_csv(
+    index=False,
+    lineterminator="\n",
+).encode("utf-8")
+
+
+# ============================================================
+# 23.4 FORMATO STATA
+# ============================================================
+# Se exporta un .dta nativo.
+#
+# Variable temporal:
+#   Q -> t = (year - 1960)*4 + (quarter - 1)   -> format t %tq
+#   M -> t = (year - 1960)*12 + (month - 1)   -> format t %tm
+#   A -> year                                  -> tsset year
+#
+# La variable t queda numérica para que Stata pueda usarla directamente.
+# ============================================================
+
+stata = pd.DataFrame()
+fechas_pd = pd.to_datetime(df["fecha"])
+stata["year"] = fechas_pd.dt.year.astype(np.int32)
+
+if FREQ == "Q":
+    stata["quarter"] = fechas_pd.dt.quarter.astype(np.int8)
+    stata["t"] = (
+        (stata["year"] - 1960) * 4
+        + (stata["quarter"] - 1)
+    ).astype(np.int32)
+
+elif FREQ == "M":
+    stata["month"] = fechas_pd.dt.month.astype(np.int8)
+    stata["t"] = (
+        (stata["year"] - 1960) * 12
+        + (stata["month"] - 1)
+    ).astype(np.int32)
+
+else:
+    stata["t"] = stata["year"].astype(np.int32)
+
+for col in datos_exportar.columns:
+    if col != "periodo":
+        # Stata admite nombres de hasta 32 caracteres.
+        nombre_stata = col[:32]
+        stata[nombre_stata] = datos_exportar[col].to_numpy()
+
+stata_buffer = BytesIO()
+
+try:
+    stata.to_stata(
+        stata_buffer,
+        write_index=False,
+        version=118,
+        time_stamp=None,
+    )
+    stata_bytes = stata_buffer.getvalue()
+    stata_ok = True
+except Exception:
+    stata_bytes = b""
+    stata_ok = False
+
+
+# ============================================================
+# 23.5 FORMATO R
+# ============================================================
+# CSV con fecha ISO YYYY-MM-DD.
+# Los nombres permanecen snake_case.
+# ============================================================
+
+r_export = datos_iso.copy()
+
+r_csv = r_export.to_csv(
+    index=False,
+    lineterminator="\n",
+).encode("utf-8")
+
+
+# ============================================================
+# 23.6 FORMATO PYTHON
+# ============================================================
+# También usa ISO YYYY-MM-DD, ideal para pandas.to_datetime().
+# Se mantiene separado del formato R para que el usuario identifique
+# claramente el archivo que eligió.
+# ============================================================
+
+python_export = datos_iso.copy()
+
+python_csv = python_export.to_csv(
+    index=False,
+    lineterminator="\n",
+).encode("utf-8")
+
+
+# ============================================================
+# 23.7 CSV UNIVERSAL
+# ============================================================
+
+universal_csv = datos_iso.to_csv(
+    index=False,
+    lineterminator="\n",
+).encode("utf-8-sig")
+
+
+# ============================================================
+# 23.8 EXCEL GENERAL
+# ============================================================
+# Excel es para inspección humana y transferencia general.
+# No pretende ser el archivo de entrada específico de EViews.
+#
 # Hoja 1: datos
 # Hoja 2: estacionariedad
 # Hoja 3: especificacion
 # Hoja 4: diccionario
-#
-# Sin fórmulas, sin celdas combinadas, sin gráficos,
-# sin formatos complejos.
-# ------------------------------------------------------------
+# ============================================================
 
-buf = BytesIO()
+excel_buffer = BytesIO()
 
 with pd.ExcelWriter(
-    buf,
+    excel_buffer,
     engine="openpyxl",
 ) as writer:
-    datos_exportar.to_excel(
+    datos_iso.to_excel(
         writer,
         sheet_name="datos",
         index=False,
@@ -857,37 +1027,136 @@ with pd.ExcelWriter(
         index=False,
     )
 
+excel_bytes = excel_buffer.getvalue()
 
-# ------------------------------------------------------------
-# BOTONES DE DESCARGA
-# ------------------------------------------------------------
 
-slug = re.sub(
-    r"[^a-zA-Z0-9_]+",
-    "_",
-    SERIE["nombre_corto"].lower(),
-).strip("_")
+# ============================================================
+# 23.9 SELECTOR DE FORMATO
+# ============================================================
 
-c1, c2 = st.columns(2)
-
-c1.download_button(
-    "Descargar CSV",
-    csv_bytes,
-    f"{slug}.csv",
-    "text/csv",
-    use_container_width=True,
+formato_descarga = st.selectbox(
+    "Formato de descarga",
+    [
+        "CSV universal",
+        "Excel",
+        "EViews",
+        "Stata",
+        "R",
+        "Python",
+    ],
 )
 
-c2.download_button(
-    "Descargar Excel",
-    buf.getvalue(),
-    f"{slug}.xlsx",
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    use_container_width=True,
-)
+if formato_descarga == "CSV universal":
+    st.download_button(
+        "Descargar CSV universal",
+        data=universal_csv,
+        file_name=f"{slug}_universal.csv",
+        mime="text/csv",
+        use_container_width=True,
+    )
+
+    st.caption(
+        "Incluye periodo, fecha ISO y componentes temporales. "
+        "Es el formato general de intercambio."
+    )
+
+elif formato_descarga == "Excel":
+    st.download_button(
+        "Descargar Excel",
+        data=excel_bytes,
+        file_name=f"{slug}.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        use_container_width=True,
+    )
+
+    st.caption(
+        "Libro general con datos, resultados de estacionariedad, "
+        "especificación y diccionario de variables."
+    )
+
+elif formato_descarga == "EViews":
+    st.download_button(
+        "Descargar para EViews",
+        data=eviews_csv,
+        file_name=f"{slug}_eviews.csv",
+        mime="text/csv",
+        use_container_width=True,
+    )
+
+    if FREQ == "Q":
+        st.caption(
+            "Archivo trimestral con date=YYYYQ#, year y quarter. "
+            "Está diseñado para crear/reconocer un workfile trimestral en EViews."
+        )
+    elif FREQ == "M":
+        st.caption(
+            "Archivo mensual con date=YYYYM##, year y month. "
+            "Está diseñado para crear/reconocer un workfile mensual en EViews."
+        )
+    else:
+        st.caption(
+            "Archivo anual con date=YYYY y year."
+        )
+
+elif formato_descarga == "Stata":
+    if stata_ok:
+        st.download_button(
+            "Descargar para Stata (.dta)",
+            data=stata_bytes,
+            file_name=f"{slug}_stata.dta",
+            mime="application/octet-stream",
+            use_container_width=True,
+        )
+
+        if FREQ == "Q":
+            st.caption(
+                "La variable t ya contiene el índice trimestral de Stata. "
+                "En Stata: format t %tq  y luego  tsset t."
+            )
+        elif FREQ == "M":
+            st.caption(
+                "La variable t ya contiene el índice mensual de Stata. "
+                "En Stata: format t %tm  y luego  tsset t."
+            )
+        else:
+            st.caption(
+                "Para frecuencia anual puedes usar: tsset year."
+            )
+    else:
+        st.error(
+            "No fue posible generar el archivo .dta en esta ejecución."
+        )
+
+elif formato_descarga == "R":
+    st.download_button(
+        "Descargar para R",
+        data=r_csv,
+        file_name=f"{slug}_r.csv",
+        mime="text/csv",
+        use_container_width=True,
+    )
+
+    st.caption(
+        "La columna fecha usa ISO YYYY-MM-DD y puede convertirse con "
+        "as.Date(fecha)."
+    )
+
+elif formato_descarga == "Python":
+    st.download_button(
+        "Descargar para Python",
+        data=python_csv,
+        file_name=f"{slug}_python.csv",
+        mime="text/csv",
+        use_container_width=True,
+    )
+
+    st.caption(
+        "La columna fecha usa ISO YYYY-MM-DD y puede convertirse con "
+        "pandas.to_datetime(df['fecha'])."
+    )
 
 st.caption(
-    "Los archivos están preparados para ser importados en Excel, EViews, "
-    "Stata, R, Python, SPSS u otros programas. Los nombres de variables "
-    "se exportan en formato simple y reproducible."
+    "Todos los formatos provienen de la misma base interna y conservan "
+    "la precisión completa de los datos. Solo cambia la representación "
+    "temporal y el formato de archivo según el software."
 )

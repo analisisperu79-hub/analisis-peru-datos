@@ -205,17 +205,51 @@ def preparar_transformaciones(df, columna):
 # ============================================================
 
 def estadisticos_descriptivos(serie):
-    x = pd.Series(serie).dropna()
+    """
+    Estadísticos descriptivos usando convenciones compatibles con Stata
+    para asimetría y curtosis.
+
+    Stata summarize, detail usa:
+        skewness = m3 / m2^(3/2)
+        kurtosis = m4 / m2^2
+
+    Por tanto:
+    - una distribución normal tiene curtosis = 3;
+    - NO se reporta exceso de curtosis.
+    """
+    x = pd.Series(serie).dropna().astype(float)
+
+    if x.empty:
+        return {}
+
+    n = x.size
+    media = x.mean()
+
+    m2 = np.mean((x - media) ** 2) if n >= 2 else np.nan
+    m3 = np.mean((x - media) ** 3) if n >= 3 else np.nan
+    m4 = np.mean((x - media) ** 4) if n >= 4 else np.nan
+
+    if n >= 3 and pd.notna(m2) and m2 > 0:
+        asimetria = m3 / (m2 ** 1.5)
+    else:
+        asimetria = np.nan
+
+    if n >= 4 and pd.notna(m2) and m2 > 0:
+        curtosis = m4 / (m2 ** 2)
+    else:
+        curtosis = np.nan
+
     return {
-        "Observaciones": int(x.size),
-        "Media": float(x.mean()),
+        "Observaciones": int(n),
+        "Media": float(media),
         "Mediana": float(x.median()),
-        "Desv. estándar": float(x.std(ddof=1)) if x.size > 1 else np.nan,
+        "Desv. estándar": float(x.std(ddof=1)) if n > 1 else np.nan,
         "Mínimo": float(x.min()),
         "Máximo": float(x.max()),
-        "Asimetría": float(x.skew()) if x.size >= 3 else np.nan,
-        "Curtosis": float(x.kurt()) if x.size >= 4 else np.nan,
+        "Asimetría": float(asimetria) if pd.notna(asimetria) else np.nan,
+        "Curtosis": float(curtosis) if pd.notna(curtosis) else np.nan,
     }
+
 
 # ============================================================
 # 7. X-13ARIMA-SEATS
@@ -1137,7 +1171,7 @@ formato_descarga = st.selectbox(
 
 if formato_descarga == "CSV universal":
     st.download_button(
-        "Descargar CSV",
+        "Descargar CSV universal",
         data=universal_csv,
         file_name=f"{slug}_universal.csv",
         mime="text/csv",

@@ -862,30 +862,36 @@ if FREQ == "Q":
         f"{d.year}Q{d.quarter}"
         for d in pd.to_datetime(df["fecha"])
     ]
-    eviews["year"] = pd.to_datetime(df["fecha"]).dt.year.astype(int)
-    eviews["quarter"] = pd.to_datetime(df["fecha"]).dt.quarter.astype(int)
+    eviews["year"] = pd.to_datetime(df["fecha"]).dt.year.astype(int).to_numpy()
+    eviews["quarter"] = pd.to_datetime(df["fecha"]).dt.quarter.astype(int).to_numpy()
 
 elif FREQ == "M":
     eviews["date"] = [
         f"{d.year}M{d.month:02d}"
         for d in pd.to_datetime(df["fecha"])
     ]
-    eviews["year"] = pd.to_datetime(df["fecha"]).dt.year.astype(int)
-    eviews["month"] = pd.to_datetime(df["fecha"]).dt.month.astype(int)
+    eviews["year"] = pd.to_datetime(df["fecha"]).dt.year.astype(int).to_numpy()
+    eviews["month"] = pd.to_datetime(df["fecha"]).dt.month.astype(int).to_numpy()
 
 else:
     eviews["date"] = pd.to_datetime(df["fecha"]).dt.year.astype(str)
-    eviews["year"] = pd.to_datetime(df["fecha"]).dt.year.astype(int)
+    eviews["year"] = pd.to_datetime(df["fecha"]).dt.year.astype(int).to_numpy()
 
 for col in datos_exportar.columns:
     if col != "periodo":
         eviews[col] = datos_exportar[col].to_numpy()
 
 # UTF-8 sin BOM para evitar caracteres invisibles en el primer encabezado.
+# Limpiar encabezados por seguridad.
+eviews.columns = [str(c).strip() for c in eviews.columns]
+
+# CSV estilo Windows para máxima compatibilidad con EViews.
+# CRLF evita que el último encabezado conserve un salto de línea invisible
+# que luego puede contaminar el título que EViews envía a X-12/X-13.
 eviews_csv = eviews.to_csv(
     index=False,
-    lineterminator="\n",
-).encode("utf-8")
+    lineterminator="\r\n",
+).encode("cp1252")
 
 
 # ============================================================
@@ -903,17 +909,17 @@ eviews_csv = eviews.to_csv(
 
 stata = pd.DataFrame()
 fechas_pd = pd.to_datetime(df["fecha"])
-stata["year"] = fechas_pd.dt.year.astype(np.int32)
+stata["year"] = fechas_pd.dt.year.astype(np.int32).to_numpy()
 
 if FREQ == "Q":
-    stata["quarter"] = fechas_pd.dt.quarter.astype(np.int8)
+    stata["quarter"] = fechas_pd.dt.quarter.astype(np.int8).to_numpy()
     stata["t"] = (
         (stata["year"] - 1960) * 4
         + (stata["quarter"] - 1)
     ).astype(np.int32)
 
 elif FREQ == "M":
-    stata["month"] = fechas_pd.dt.month.astype(np.int8)
+    stata["month"] = fechas_pd.dt.month.astype(np.int8).to_numpy()
     stata["t"] = (
         (stata["year"] - 1960) * 12
         + (stata["month"] - 1)
@@ -1086,7 +1092,8 @@ elif formato_descarga == "EViews":
     if FREQ == "Q":
         st.caption(
             "Archivo trimestral con date=YYYYQ#, year y quarter. "
-            "Está diseñado para crear/reconocer un workfile trimestral en EViews."
+            "Se exporta con formato CSV de Windows (CRLF) para evitar "
+            "caracteres invisibles al importar y usar X-12/X-13 en EViews."
         )
     elif FREQ == "M":
         st.caption(

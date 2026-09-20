@@ -868,6 +868,15 @@ elif FREQ == "M":
         pd.to_datetime(df["fecha"]).dt.month.astype(int),
     )
 
+# Base general para CSV universal y Excel:
+# solo periodo amigable + variables.
+# No incluye fecha, anio, trimestre ni mes.
+datos_general = datos_exportar.copy()
+datos_general["periodo"] = [
+    etiqueta_periodo_amigable(f)
+    for f in pd.to_datetime(df["fecha"])
+]
+
 
 # ============================================================
 # 23.3 FORMATO EVIEWS
@@ -1061,7 +1070,7 @@ python_csv = python_export.to_csv(
 # 23.7 CSV UNIVERSAL
 # ============================================================
 
-universal_csv = datos_iso.to_csv(
+universal_csv = datos_general.to_csv(
     index=False,
     lineterminator="\n",
 ).encode("utf-8-sig")
@@ -1085,7 +1094,7 @@ with pd.ExcelWriter(
     excel_buffer,
     engine="openpyxl",
 ) as writer:
-    datos_iso.to_excel(
+    datos_general.to_excel(
         writer,
         sheet_name="datos",
         index=False,
@@ -1138,8 +1147,8 @@ if formato_descarga == "CSV universal":
     )
 
     st.caption(
-        "Incluye periodo amigable (por ejemplo 2000tri1 o 2000mes1), "
-        "fecha ISO y componentes temporales. Es el formato general de intercambio."
+        "Incluye solo el periodo amigable (por ejemplo 2000tri1 o 2000mes1) "
+        "y las variables de la base. No incluye fecha, anio ni trimestre/mes."
     )
 
 elif formato_descarga == "Excel":
@@ -1153,8 +1162,8 @@ elif formato_descarga == "Excel":
 
     st.caption(
         "Libro general con datos, resultados de estacionariedad, "
-        "especificación y diccionario de variables. El periodo se muestra "
-        "como 2000tri1 o 2000mes1 para evitar interpretación automática en EViews."
+        "especificación y diccionario de variables. En la hoja datos solo se "
+        "muestra periodo y las variables; no fecha, anio ni trimestre/mes."
     )
 
 elif formato_descarga == "EViews":

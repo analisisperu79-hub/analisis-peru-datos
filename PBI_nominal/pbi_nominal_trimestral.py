@@ -21,6 +21,8 @@
 # ============================================================
 
 from io import BytesIO
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from pathlib import Path
 import re
 import tarfile
@@ -58,6 +60,16 @@ BCRP_API = "https://estadisticas.bcrp.gob.pe/estadisticas/series/api"
 FREQ = SERIE["frecuencia"].upper()
 PERIODOS_POR_ANO = {"M": 12, "Q": 4, "A": 1}
 PERIODO_ESTACIONAL = PERIODOS_POR_ANO[FREQ]
+
+# Caché automática según frecuencia de publicación de la serie.
+# Esto evita consultar innecesariamente la API y mantiene la app actualizada.
+TTL_POR_FRECUENCIA = {
+    "D": 3600,      # diaria: 1 hora
+    "M": 21600,     # mensual: 6 horas
+    "Q": 43200,     # trimestral: 12 horas
+    "A": 86400,     # anual: 24 horas
+}
+CACHE_TTL = TTL_POR_FRECUENCIA.get(FREQ, 21600)
 
 st.set_page_config(
     page_title=f"{SERIE['nombre']} | Análisis Perú",
@@ -151,7 +163,7 @@ def etiqueta_periodo(fecha):
 # 4. DESCARGA BCRP
 # ============================================================
 
-@st.cache_data(ttl=3600, show_spinner=False)
+@st.cache_data(ttl=CACHE_TTL, show_spinner=False)
 def descargar_serie_bcrp():
     url = f"{BCRP_API}/{SERIE['codigo']}/json/{SERIE['api_inicio']}/{SERIE['api_fin']}/esp"
     r = requests.get(url, timeout=30)
@@ -440,6 +452,13 @@ def grafico_serie(df, columna, etiqueta_y):
 
 try:
     df_total = descargar_serie_bcrp()
+
+    # Momento de consulta/recuperación mostrado al usuario.
+    # No representa necesariamente la fecha oficial de publicación del BCRP.
+    consulta_bcrp = datetime.now(
+        ZoneInfo("America/Lima")
+    )
+
 except Exception as e:
     st.error("No fue posible descargar la serie desde BCRPData.")
     st.caption(f"Detalle técnico: {type(e).__name__}")
@@ -450,6 +469,13 @@ if df_total.empty:
     st.stop()
 
 periodos = df_total["periodo"].tolist()
+ultimo_periodo_disponible = periodos[-1]
+
+st.caption(
+    f"Último periodo disponible: {ultimo_periodo_disponible} · "
+    f"Última consulta a BCRPData: "
+    f"{consulta_bcrp.strftime('%d/%m/%Y %H:%M')} (hora de Perú)"
+)
 
 # ============================================================
 # 12. SELECCIÓN DE MUESTRA

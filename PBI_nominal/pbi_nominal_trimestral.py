@@ -593,43 +593,301 @@ else:
 # 22. DATOS
 # ============================================================
 
-st.markdown('<div class="ap-section-title">Datos seleccionados</div>',unsafe_allow_html=True)
-cols = ["periodo",ORIGINAL]
-nombres = {"periodo":"Periodo",ORIGINAL:"Serie original"}
-if ajuste_disponible:
-    cols.append(AJUSTADA); nombres[AJUSTADA] = "Serie ajustada X-13"
-if log_ok:
-    cols.append("ln_serie_base"); nombres["ln_serie_base"] = f"ln({SERIE['nombre_corto']})"
-if usar_diff:
-    df["d_serie_seleccionada"] = df[columna_base].diff()
-    cols.append("d_serie_seleccionada")
-    nombres["d_serie_seleccionada"] = f"Δln({SERIE['nombre_corto']})" if columna_base=="ln_serie_base" else f"Δ{SERIE['nombre_corto']}"
+st.markdown(
+    '<div class="ap-section-title">Datos seleccionados</div>',
+    unsafe_allow_html=True,
+)
 
-tabla = df[cols].rename(columns=nombres).copy()
-numcols = tabla.select_dtypes(include=[np.number]).columns
-st.dataframe(tabla.style.format({c:"{:,.2f}" for c in numcols},na_rep="—"),use_container_width=True,hide_index=True)
+# ------------------------------------------------------------
+# NOMBRES ESTÁNDAR PARA EXPORTACIÓN
+# ------------------------------------------------------------
+# Objetivo:
+# - máxima compatibilidad con EViews, Stata, R, Python, SPSS y Excel
+# - sin espacios ni tildes
+# - sin símbolos matemáticos
+# - snake_case
+#
+# Regla para diferencias:
+#   si la transformación base es nivel      -> d_<variable>
+#   si la transformación base es logaritmo  -> d_ln_<variable>
+# ------------------------------------------------------------
 
-# ============================================================
-# 23. DESCARGAS
-# ============================================================
+nombre_var_export = re.sub(
+    r"[^a-zA-Z0-9_]+",
+    "_",
+    SERIE["nombre_corto"].lower(),
+).strip("_")
 
-st.markdown('<div class="ap-section-title">Descargas</div>',unsafe_allow_html=True)
-csv_bytes = tabla.to_csv(index=False).encode("utf-8-sig")
+col_original_export = f"{nombre_var_export}_original"
+col_ajustada_export = f"{nombre_var_export}_ajustado_x13"
+col_log_export = f"ln_{nombre_var_export}"
 
-especificacion = pd.DataFrame({
-    "Parámetro":["Serie","Código BCRP","Fuente","Frecuencia","Unidad","Periodo inicial","Periodo final","Observaciones","Serie utilizada","Ajuste estacional","Logaritmo disponible","Transformación seleccionada","Método ADF","Rezagos manuales ADF","Componente determinístico","KPSS bandwidth/rezagos","Orden sugerido","Primera diferencia aplicada"],
-    "Valor":[SERIE["nombre"],SERIE["codigo"],SERIE["fuente"],FREQ,SERIE["unidad"],st.session_state[ki],st.session_state[kf],len(df),nombre_base,"X-13ARIMA-SEATS" if base_ajustada else "No aplicado","Sí" if log_ok else "No",transformacion,metodo_adf,rez_manual if metodo_adf=="Manual" else "No aplica",det_label,"Automático",ri["orden"],"Sí" if usar_diff else "No"]
+datos_exportar = pd.DataFrame({
+    "periodo": df["periodo"].astype(str),
+    col_original_export: df[ORIGINAL].astype(float),
 })
 
+if ajuste_disponible:
+    datos_exportar[col_ajustada_export] = df[AJUSTADA].astype(float)
+
+if log_ok:
+    datos_exportar[col_log_export] = df["ln_serie_base"].astype(float)
+
+nombre_diferencia_export = None
+
+if usar_diff:
+    if columna_base == "ln_serie_base":
+        nombre_diferencia_export = f"d_ln_{nombre_var_export}"
+    else:
+        nombre_diferencia_export = f"d_{nombre_var_export}"
+
+    datos_exportar[nombre_diferencia_export] = (
+        df[columna_base].diff().astype(float)
+    )
+
+# Vista de pantalla: 2 decimales.
+# datos_exportar conserva precisión completa.
+numcols = datos_exportar.select_dtypes(include=[np.number]).columns
+
+st.dataframe(
+    datos_exportar.style.format(
+        {c: "{:,.2f}" for c in numcols},
+        na_rep="—",
+    ),
+    use_container_width=True,
+    hide_index=True,
+)
+
+
+# ============================================================
+# 23. DESCARGAS ESTANDARIZADAS
+# ============================================================
+
+st.markdown(
+    '<div class="ap-section-title">Descargas</div>',
+    unsafe_allow_html=True,
+)
+
+# ------------------------------------------------------------
+# CSV UNIVERSAL
+# ------------------------------------------------------------
+
+csv_bytes = datos_exportar.to_csv(
+    index=False,
+).encode("utf-8-sig")
+
+
+# ------------------------------------------------------------
+# RESULTADOS ECONOMÉTRICOS CON NOMBRES SIMPLES
+# ------------------------------------------------------------
+
+resultados_exportar = rp.copy()
+
+resultados_exportar.columns = [
+    "transformacion",
+    "prueba",
+    "estadistico",
+    "p_value",
+    "rezagos",
+    "n",
+    "resultado",
+]
+
+
+# ------------------------------------------------------------
+# ESPECIFICACIÓN REPRODUCIBLE
+# ------------------------------------------------------------
+
+if columna_base == "ln_serie_base":
+    transformacion_base_export = f"ln_{nombre_var_export}"
+else:
+    transformacion_base_export = nombre_var_export
+
+diferencia_export = (
+    nombre_diferencia_export
+    if nombre_diferencia_export is not None
+    else "no_aplicada"
+)
+
+especificacion = pd.DataFrame({
+    "parametro": [
+        "serie",
+        "codigo_bcrp",
+        "fuente",
+        "frecuencia",
+        "unidad",
+        "periodo_inicial",
+        "periodo_final",
+        "observaciones",
+        "serie_utilizada",
+        "ajuste_estacional",
+        "metodo_ajuste_estacional",
+        "logaritmo_disponible",
+        "transformacion_base",
+        "metodo_adf",
+        "rezagos_adf_manual",
+        "componente_deterministico",
+        "kpss_bandwidth",
+        "orden_integracion_sugerido",
+        "primera_diferencia_aplicada",
+        "nombre_variable_diferenciada",
+    ],
+    "valor": [
+        SERIE["nombre"],
+        SERIE["codigo"],
+        SERIE["fuente"],
+        FREQ,
+        SERIE["unidad"],
+        st.session_state[ki],
+        st.session_state[kf],
+        len(df),
+        nombre_base,
+        "si" if base_ajustada else "no",
+        "X-13ARIMA-SEATS" if base_ajustada else "no_aplicado",
+        "si" if log_ok else "no",
+        transformacion_base_export,
+        metodo_adf,
+        rez_manual if metodo_adf == "Manual" else "no_aplica",
+        det_label,
+        "automatico",
+        ri["orden"],
+        "si" if usar_diff else "no",
+        diferencia_export,
+    ],
+})
+
+
+# ------------------------------------------------------------
+# DICCIONARIO DE VARIABLES
+# ------------------------------------------------------------
+
+diccionario_filas = [
+    {
+        "variable": "periodo",
+        "descripcion": "Periodo de observacion",
+        "unidad": "periodo",
+        "transformacion": "ninguna",
+    },
+    {
+        "variable": col_original_export,
+        "descripcion": f"{SERIE['nombre']} - serie original",
+        "unidad": SERIE["unidad"],
+        "transformacion": "nivel_original",
+    },
+]
+
+if ajuste_disponible:
+    diccionario_filas.append({
+        "variable": col_ajustada_export,
+        "descripcion": f"{SERIE['nombre']} - serie ajustada estacionalmente",
+        "unidad": SERIE["unidad"],
+        "transformacion": "x13_arima_seats",
+    })
+
+if log_ok:
+    diccionario_filas.append({
+        "variable": col_log_export,
+        "descripcion": f"Logaritmo natural de {SERIE['nombre_corto']}",
+        "unidad": "logaritmo",
+        "transformacion": "log_natural",
+    })
+
+if usar_diff and nombre_diferencia_export is not None:
+    diccionario_filas.append({
+        "variable": nombre_diferencia_export,
+        "descripcion": (
+            f"Primera diferencia de ln({SERIE['nombre_corto']})"
+            if columna_base == "ln_serie_base"
+            else f"Primera diferencia de {SERIE['nombre_corto']}"
+        ),
+        "unidad": (
+            "diferencia_logaritmica"
+            if columna_base == "ln_serie_base"
+            else f"diferencia_en_{SERIE['unidad']}"
+        ),
+        "transformacion": (
+            "primera_diferencia_log"
+            if columna_base == "ln_serie_base"
+            else "primera_diferencia_nivel"
+        ),
+    })
+
+diccionario_variables = pd.DataFrame(diccionario_filas)
+
+
+# ------------------------------------------------------------
+# EXCEL LIMPIO Y COMPATIBLE
+# ------------------------------------------------------------
+# Hoja 1: datos
+# Hoja 2: estacionariedad
+# Hoja 3: especificacion
+# Hoja 4: diccionario
+#
+# Sin fórmulas, sin celdas combinadas, sin gráficos,
+# sin formatos complejos.
+# ------------------------------------------------------------
+
 buf = BytesIO()
-with pd.ExcelWriter(buf,engine="openpyxl") as writer:
-    tabla.to_excel(writer,sheet_name="datos",index=False)
-    rp.to_excel(writer,sheet_name="estacionariedad",index=False)
-    especificacion.to_excel(writer,sheet_name="especificacion",index=False)
 
-slug = re.sub(r"[^a-zA-Z0-9_]+","_",SERIE["nombre_corto"].lower())
-c1,c2 = st.columns(2)
-c1.download_button("Descargar CSV",csv_bytes,f"{slug}.csv","text/csv",use_container_width=True)
-c2.download_button("Descargar Excel",buf.getvalue(),f"{slug}.xlsx","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",use_container_width=True)
+with pd.ExcelWriter(
+    buf,
+    engine="openpyxl",
+) as writer:
+    datos_exportar.to_excel(
+        writer,
+        sheet_name="datos",
+        index=False,
+    )
 
-st.caption(f"Fuente: {SERIE['fuente']}. Resultados calculados por Análisis Perú sobre la muestra y especificación seleccionadas.")
+    resultados_exportar.to_excel(
+        writer,
+        sheet_name="estacionariedad",
+        index=False,
+    )
+
+    especificacion.to_excel(
+        writer,
+        sheet_name="especificacion",
+        index=False,
+    )
+
+    diccionario_variables.to_excel(
+        writer,
+        sheet_name="diccionario",
+        index=False,
+    )
+
+
+# ------------------------------------------------------------
+# BOTONES DE DESCARGA
+# ------------------------------------------------------------
+
+slug = re.sub(
+    r"[^a-zA-Z0-9_]+",
+    "_",
+    SERIE["nombre_corto"].lower(),
+).strip("_")
+
+c1, c2 = st.columns(2)
+
+c1.download_button(
+    "Descargar CSV",
+    csv_bytes,
+    f"{slug}.csv",
+    "text/csv",
+    use_container_width=True,
+)
+
+c2.download_button(
+    "Descargar Excel",
+    buf.getvalue(),
+    f"{slug}.xlsx",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    use_container_width=True,
+)
+
+st.caption(
+    "Los archivos están preparados para ser importados en Excel, EViews, "
+    "Stata, R, Python, SPSS u otros programas. Los nombres de variables "
+    "se exportan en formato simple y reproducible."
+)

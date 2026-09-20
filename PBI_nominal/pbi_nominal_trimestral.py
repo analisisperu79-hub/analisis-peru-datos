@@ -803,11 +803,44 @@ slug = re.sub(
 
 
 # ============================================================
+# 23.2 ETIQUETA DE PERIODO AMIGABLE PARA CSV/EXCEL
+# ============================================================
+# Objetivo:
+# - mostrar el periodo tal como un usuario lo entiende;
+# - evitar que EViews lo reconozca automáticamente como fecha;
+# - mantener la fecha ISO por separado cuando corresponde.
+#
+# Ejemplos:
+#   trimestral -> 2000tri1
+#   mensual    -> 2000mes1
+#   anual      -> 2000
+# ============================================================
+
+def etiqueta_periodo_amigable(fecha):
+    fecha = pd.Timestamp(fecha)
+
+    if FREQ == "Q":
+        return f"{fecha.year}tri{fecha.quarter}"
+
+    if FREQ == "M":
+        return f"{fecha.year}mes{fecha.month}"
+
+    return str(fecha.year)
+
+
+# ============================================================
 # 23.2 BASE TEMPORAL COMÚN
 # ============================================================
 
 # Fecha ISO universal. R y Python la leen de forma muy natural.
 datos_iso = datos_exportar.copy()
+
+# Reemplazamos el identificador de periodo por una etiqueta amigable.
+datos_iso["periodo"] = [
+    etiqueta_periodo_amigable(f)
+    for f in pd.to_datetime(df["fecha"])
+]
+
 datos_iso.insert(
     1,
     "fecha",
@@ -955,10 +988,26 @@ elif FREQ == "M":
 else:
     stata["t"] = stata["year"].astype(np.int32)
 
+stata_name_map = {}
+
+if col_original_export in datos_exportar.columns:
+    stata_name_map[col_original_export] = nombre_var_export
+
+if col_ajustada_export in datos_exportar.columns:
+    stata_name_map[col_ajustada_export] = f"{nombre_var_export}_sa"
+
+if col_log_export in datos_exportar.columns:
+    stata_name_map[col_log_export] = f"ln_{nombre_var_export}"
+
+if nombre_diferencia_export is not None and nombre_diferencia_export in datos_exportar.columns:
+    if nombre_diferencia_export.startswith("d_ln_"):
+        stata_name_map[nombre_diferencia_export] = f"d_ln_{nombre_var_export}"
+    else:
+        stata_name_map[nombre_diferencia_export] = f"d_{nombre_var_export}"
+
 for col in datos_exportar.columns:
     if col != "periodo":
-        # Stata admite nombres de hasta 32 caracteres.
-        nombre_stata = col[:32]
+        nombre_stata = stata_name_map.get(col, col)[:32]
         stata[nombre_stata] = datos_exportar[col].to_numpy()
 
 stata_buffer = BytesIO()
@@ -1089,8 +1138,8 @@ if formato_descarga == "CSV universal":
     )
 
     st.caption(
-        "Incluye periodo, fecha ISO y componentes temporales. "
-        "Es el formato general de intercambio."
+        "Incluye periodo amigable (por ejemplo 2000tri1 o 2000mes1), "
+        "fecha ISO y componentes temporales. Es el formato general de intercambio."
     )
 
 elif formato_descarga == "Excel":
@@ -1104,35 +1153,28 @@ elif formato_descarga == "Excel":
 
     st.caption(
         "Libro general con datos, resultados de estacionariedad, "
-        "especificación y diccionario de variables."
+        "especificación y diccionario de variables. El periodo se muestra "
+        "como 2000tri1 o 2000mes1 para evitar interpretación automática en EViews."
     )
 
 elif formato_descarga == "EViews":
-    st.download_button(
-        "Descargar para EViews",
-        data=eviews_csv,
-        file_name=f"{slug}_eviews.csv",
-        mime="text/csv",
-        use_container_width=True,
-    )
-
-    if FREQ == "Q":
-        st.caption(
-            "Archivo trimestral con date=YYYYQ#, year y quarter. "
-            "Las variables usan nombres simples para EViews: por ejemplo "
-            "pbi, pbi_sa, ln_pbi, d_pbi o d_ln_pbi. "
-            "Se exporta en CSV de Windows (CRLF)."
+    if stata_ok:
+        st.download_button(
+            "Descargar para EViews (.dta)",
+            data=stata_bytes,
+            file_name=f"{slug}_eviews.dta",
+            mime="application/octet-stream",
+            use_container_width=True,
         )
-    elif FREQ == "M":
+
         st.caption(
-            "Archivo mensual con date=YYYYM##, year y month. "
-            "Las variables usan nombres simples para EViews: variable, "
-            "variable_sa, ln_variable, d_variable o d_ln_variable."
+            "Formato .dta recomendado para EViews por su mejor compatibilidad "
+            "en nuestras pruebas. EViews puede abrirlo directamente y luego "
+            "trabajar con la estructura temporal de la base."
         )
     else:
-        st.caption(
-            "Archivo anual con date=YYYY y year. "
-            "Las variables usan nombres simples compatibles con EViews."
+        st.error(
+            "No fue posible generar el archivo .dta en esta ejecución."
         )
 
 elif formato_descarga == "Stata":

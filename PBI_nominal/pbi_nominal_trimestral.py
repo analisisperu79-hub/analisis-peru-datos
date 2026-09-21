@@ -740,6 +740,76 @@ ORIGINAL = f"{SERIE['nombre_corto']}_original"
 AJUSTADA = f"{SERIE['nombre_corto']}_ajustada"
 df[ORIGINAL] = df[SERIE["nombre_corto"]]
 
+
+# ============================================================
+# 12.1 DESCARGA RÁPIDA DE BASE ORIGINAL
+# ============================================================
+
+st.markdown(
+    '<div class="ap-section-title">Descargar base original</div>',
+    unsafe_allow_html=True,
+)
+
+st.markdown(
+    '<div class="ap-note">'
+    'Descarga la serie original correspondiente al intervalo seleccionado. '
+    'No incluye transformaciones, ajuste estacional ni variables temporales auxiliares. '
+    'Los archivos conservan la precisión completa de los datos.'
+    '</div>',
+    unsafe_allow_html=True,
+)
+
+# Base mínima: periodo + serie original.
+base_original_descarga = pd.DataFrame({
+    "periodo": [
+        etiqueta_periodo_amigable(p, FREQ)
+        for p in df["periodo"].tolist()
+    ],
+    f"{re.sub(r'[^a-zA-Z0-9_]+', '_', SERIE['nombre_corto'].lower()).strip('_')}_original":
+        df[ORIGINAL].to_numpy(),
+})
+
+# CSV universal de la base original.
+csv_original = base_original_descarga.to_csv(
+    index=False,
+    encoding="utf-8-sig",
+).encode("utf-8-sig")
+
+# Excel de la base original.
+excel_original_buffer = BytesIO()
+with pd.ExcelWriter(
+    excel_original_buffer,
+    engine="openpyxl",
+) as writer:
+    base_original_descarga.to_excel(
+        writer,
+        index=False,
+        sheet_name="datos",
+    )
+excel_original_buffer.seek(0)
+
+c_csv_original, c_excel_original = st.columns(2)
+
+with c_csv_original:
+    st.download_button(
+        "Descargar CSV",
+        data=csv_original,
+        file_name=f"{re.sub(r'[^a-zA-Z0-9_]+', '_', SERIE['nombre_corto'].lower()).strip('_')}_original.csv",
+        mime="text/csv",
+        use_container_width=True,
+        key="descarga_rapida_csv_original",
+    )
+
+with c_excel_original:
+    st.download_button(
+        "Descargar Excel",
+        data=excel_original_buffer.getvalue(),
+        file_name=f"{re.sub(r'[^a-zA-Z0-9_]+', '_', SERIE['nombre_corto'].lower()).strip('_')}_original.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        use_container_width=True,
+        key="descarga_rapida_excel_original",
+    )
+
 # ============================================================
 # 13. RESUMEN
 # ============================================================
@@ -1446,7 +1516,7 @@ if formato_descarga == "CSV":
 
     st.caption(
         "Archivo CSV con el periodo y las variables de la base. "
-        "No incluye fecha, año ni trimestre/mes."
+        "No incluye fecha, anio ni trimestre/mes."
     )
 
 elif formato_descarga == "Excel":

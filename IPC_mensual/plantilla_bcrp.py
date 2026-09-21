@@ -44,14 +44,14 @@ warnings.filterwarnings("ignore")
 # ESTA ES LA PARTE QUE NORMALMENTE CAMBIARÁS PARA CADA NUEVA SERIE.
 
 SERIE = {
-    "nombre": "PBI nominal trimestral",
-    "codigo": "PN02550AQ",
+    "nombre": "Índice de precios Lima Metropolitana (índice Dic.2021 = 100)",
+    "codigo": "PN38705PM",
     "nombre_corto": "PBI",
-    "frecuencia": "Q",              # M = mensual, Q = trimestral, A = anual
-    "unidad": "Millones de soles",
-    "fuente": "INEI / BCRP",
-    "api_inicio": "1980-1",
-    "api_fin": "2030-4",
+    "frecuencia": "M",              # M = mensual, Q = trimestral, A = anual
+    "unidad": "Índice",
+    "fuente": "INEI/BCRP",
+    "api_inicio": "1991-1",
+    "api_fin": "2100-12",
     "permitir_log": True,
     "permitir_ajuste_estacional": True,
 }

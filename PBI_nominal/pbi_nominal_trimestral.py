@@ -852,7 +852,6 @@ resultados_exportar.columns = [
     "estadistico",
     "p_value",
     "rezagos",
-    "n",
     "resultado",
 ]
 

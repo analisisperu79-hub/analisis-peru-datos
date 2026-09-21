@@ -44,14 +44,14 @@ warnings.filterwarnings("ignore")
 # ESTA ES LA PARTE QUE NORMALMENTE CAMBIARÁS PARA CADA NUEVA SERIE.
 
 SERIE = {
-    "nombre": "PBI nominal trimestral",
-    "codigo": "PN02550AQ",
-    "nombre_corto": "PBI",
-    "frecuencia": "Q",              # M = mensual, Q = trimestral, A = anual
-    "unidad": "Millones de soles",
+    "nombre": "IPC subyacente",
+    "codigo": "PN38708PM",
+    "nombre_corto": "ipc_subyacente",
+    "frecuencia": "M",              # M = mensual, Q = trimestral, A = anual
+    "unidad": "índice",
     "fuente": "INEI / BCRP",
-    "api_inicio": "1980-1",
-    "api_fin": "2030-4",
+    "api_inicio": "1992-1",
+    "api_fin": "2030-12",
     "permitir_log": True,
     "permitir_ajuste_estacional": True,
 }

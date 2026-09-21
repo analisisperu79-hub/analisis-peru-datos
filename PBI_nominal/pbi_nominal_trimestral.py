@@ -648,11 +648,6 @@ if SERIE["permitir_ajuste_estacional"] and FREQ in ("M","Q"):
             ajuste_disponible = True
             sa = rx["ajustada"].copy(); sa.index = pd.DatetimeIndex(sa.index)
             df[AJUSTADA] = df["fecha"].map(sa)
-            fig = go.Figure()
-            fig.add_trace(go.Scatter(x=df["fecha"],y=df[ORIGINAL],mode="lines",name="Original",hovertemplate="%{x}<br>%{y:,.2f}<extra></extra>"))
-            fig.add_trace(go.Scatter(x=df["fecha"],y=df[AJUSTADA],mode="lines",name="Ajustada X-13",hovertemplate="%{x}<br>%{y:,.2f}<extra></extra>"))
-            fig.update_layout(autosize=True, template="plotly_white",height=420,margin=dict(l=20,r=15,t=20,b=30),hovermode="x unified",xaxis_title="",yaxis_title=SERIE["unidad"],yaxis_tickformat=",.2f",legend=dict(orientation="h"))
-            st.plotly_chart(fig,use_container_width=True,config={"displayModeBar":False},key="grafico_x13")
         else:
             usar_ajustada = False
             st.warning(rx["mensaje"])
@@ -736,9 +731,6 @@ if ri["orden"] == "I(1)":
     usar_diff = st.checkbox("Aplicar primera diferencia para el análisis posterior",value=False,key="usar_diff_post")
     if usar_diff:
         serie_dinamica = df[columna_base].diff()
-        figd = go.Figure(go.Scatter(x=df["fecha"],y=serie_dinamica,mode="lines",hovertemplate="%{x}<br>%{y:,.2f}<extra></extra>"))
-        figd.update_layout(template="plotly_white",height=420,margin=dict(l=20,r=15,t=20,b=30),hovermode="x unified",xaxis_title="",yaxis_title=f"Primera diferencia de {transformacion}",yaxis_tickformat=",.2f",showlegend=False)
-        st.plotly_chart(figd,use_container_width=True,config={"displayModeBar":False},key="grafico_diff_post")
 elif ri["orden"] == "I(0)":
     st.info("El diagnóstico sugiere I(0). No se propone una primera diferencia.")
 else:

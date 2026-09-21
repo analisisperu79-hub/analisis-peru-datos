@@ -94,7 +94,31 @@ st.markdown(
 
       /* Responsive general */
       html, body, [data-testid="stAppViewContainer"], .stApp {
-          overflow-x:hidden;
+          overflow-x:hidden !important;
+          scrollbar-width:none !important;      /* Firefox */
+          -ms-overflow-style:none !important;   /* navegadores antiguos */
+      }
+
+      /* Ocultar visualmente las barras internas de desplazamiento */
+      html::-webkit-scrollbar,
+      body::-webkit-scrollbar,
+      [data-testid="stAppViewContainer"]::-webkit-scrollbar,
+      .stApp::-webkit-scrollbar {
+          display:none !important;
+          width:0 !important;
+          height:0 !important;
+      }
+
+      /* El contenedor principal tampoco muestra scrollbar propio */
+      [data-testid="stAppViewContainer"] > .main {
+          scrollbar-width:none !important;
+          -ms-overflow-style:none !important;
+      }
+
+      [data-testid="stAppViewContainer"] > .main::-webkit-scrollbar {
+          display:none !important;
+          width:0 !important;
+          height:0 !important;
       }
 
       [data-testid="stPlotlyChart"],

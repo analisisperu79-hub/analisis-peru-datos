@@ -712,10 +712,10 @@ for col,titulo,valor in zip(st.columns(3),["Diagnóstico en nivel","Diagnóstico
         st.markdown(f'<div style="border:1px solid #e7eaf0;border-radius:9px;padding:.65rem .75rem;background:#fff"><div style="font-size:.82rem;color:#4b5563;margin-bottom:.25rem">{titulo}</div><div style="font-size:1.15rem;font-weight:600;color:#17365d">{valor}</div></div>',unsafe_allow_html=True)
 
 rp = pd.DataFrame([
-    {"Transformación":transformacion,"Prueba":"ADF","Estadístico":ri["adf_nivel"]["estadistico"],"p-value":ri["adf_nivel"]["p_value"],"Rezagos":ri["adf_nivel"]["rezagos"],"N":ri["adf_nivel"]["nobs"],"Resultado":resultado_simple_prueba("ADF",ri["adf_nivel"]["p_value"])},
-    {"Transformación":transformacion,"Prueba":"KPSS","Estadístico":ri["kpss_nivel"]["estadistico"],"p-value":ri["kpss_nivel"]["p_value"],"Rezagos":ri["kpss_nivel"]["rezagos"],"N":ri["kpss_nivel"]["nobs"],"Resultado":resultado_simple_prueba("KPSS",ri["kpss_nivel"]["p_value"])},
-    {"Transformación":f"Δ({transformacion})","Prueba":"ADF","Estadístico":ri["adf_diferencia"]["estadistico"],"p-value":ri["adf_diferencia"]["p_value"],"Rezagos":ri["adf_diferencia"]["rezagos"],"N":ri["adf_diferencia"]["nobs"],"Resultado":resultado_simple_prueba("ADF",ri["adf_diferencia"]["p_value"])},
-    {"Transformación":f"Δ({transformacion})","Prueba":"KPSS","Estadístico":ri["kpss_diferencia"]["estadistico"],"p-value":ri["kpss_diferencia"]["p_value"],"Rezagos":ri["kpss_diferencia"]["rezagos"],"N":ri["kpss_diferencia"]["nobs"],"Resultado":resultado_simple_prueba("KPSS",ri["kpss_diferencia"]["p_value"])},
+    {"Transformación":transformacion,"Prueba":"ADF","Estadístico":ri["adf_nivel"]["estadistico"],"p-value":ri["adf_nivel"]["p_value"],"Rezagos":ri["adf_nivel"]["rezagos"],"Resultado":resultado_simple_prueba("ADF",ri["adf_nivel"]["p_value"])},
+    {"Transformación":transformacion,"Prueba":"KPSS","Estadístico":ri["kpss_nivel"]["estadistico"],"p-value":ri["kpss_nivel"]["p_value"],"Rezagos":ri["kpss_nivel"]["rezagos"],"Resultado":resultado_simple_prueba("KPSS",ri["kpss_nivel"]["p_value"])},
+    {"Transformación":f"Δ({transformacion})","Prueba":"ADF","Estadístico":ri["adf_diferencia"]["estadistico"],"p-value":ri["adf_diferencia"]["p_value"],"Rezagos":ri["adf_diferencia"]["rezagos"],"Resultado":resultado_simple_prueba("ADF",ri["adf_diferencia"]["p_value"])},
+    {"Transformación":f"Δ({transformacion})","Prueba":"KPSS","Estadístico":ri["kpss_diferencia"]["estadistico"],"p-value":ri["kpss_diferencia"]["p_value"],"Rezagos":ri["kpss_diferencia"]["rezagos"],"Resultado":resultado_simple_prueba("KPSS",ri["kpss_diferencia"]["p_value"])},
 ])
 st.dataframe(rp.style.format({"Estadístico":"{:.2f}","p-value":"{:.2f}"},na_rep="—"),use_container_width=True,hide_index=True)
 st.caption("La interpretación de hipótesis nulas, criterios de decisión y limitaciones de ADF/KPSS se documenta en la sección Metodología.")

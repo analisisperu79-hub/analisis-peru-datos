@@ -1446,7 +1446,7 @@ if formato_descarga == "CSV":
 
     st.caption(
         "Archivo CSV con el periodo y las variables de la base. "
-        "No incluye fecha, anio ni trimestre/mes."
+        "No incluye fecha, año ni trimestre/mes."
     )
 
 elif formato_descarga == "Excel":

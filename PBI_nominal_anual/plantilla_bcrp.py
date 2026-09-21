@@ -51,7 +51,7 @@ SERIE = {
     "unidad": "Millones de soles",
     "fuente": "BCRP",
     "api_inicio": "1950",
-    "api_fin": "2030",
+    "api_fin": "2100",
     "permitir_log": True,
     "permitir_ajuste_estacional": True,
 }

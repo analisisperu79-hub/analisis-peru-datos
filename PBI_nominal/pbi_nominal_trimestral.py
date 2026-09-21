@@ -92,6 +92,111 @@ st.markdown(
       [data-testid="stDataFrame"] {border:1px solid #e7eaf0; border-radius:8px;}
       .stButton>button, .stDownloadButton>button, div[data-testid="stFormSubmitButton"] button {border-radius:8px;}
 
+      /* =====================================================
+         PALETA VISUAL — ANÁLISIS PERÚ
+         Mantiene Streamlit coherente con el tema de Blogger.
+         ===================================================== */
+
+      /* Títulos y textos destacados */
+      h1, h2, h3,
+      .ap-section-title {
+          color:#12355b !important;
+      }
+
+      /* Botones principales: elimina el naranja/rojo por defecto */
+      .stButton > button[kind="primary"],
+      div[data-testid="stFormSubmitButton"] button,
+      button[data-testid="stBaseButton-primary"] {
+          background:#14559b !important;
+          border-color:#14559b !important;
+          color:#ffffff !important;
+          box-shadow:none !important;
+      }
+
+      .stButton > button[kind="primary"]:hover,
+      div[data-testid="stFormSubmitButton"] button:hover,
+      button[data-testid="stBaseButton-primary"]:hover {
+          background:#0f447d !important;
+          border-color:#0f447d !important;
+          color:#ffffff !important;
+      }
+
+      /* Botones secundarios */
+      .stButton > button:not([kind="primary"]),
+      button[data-testid="stBaseButton-secondary"] {
+          background:#ffffff !important;
+          border-color:#14559b !important;
+          color:#14559b !important;
+      }
+
+      .stButton > button:not([kind="primary"]):hover,
+      button[data-testid="stBaseButton-secondary"]:hover {
+          background:#f2f6fb !important;
+          border-color:#0f447d !important;
+          color:#0f447d !important;
+      }
+
+      /* Botones de descarga */
+      .stDownloadButton > button {
+          background:#14559b !important;
+          border-color:#14559b !important;
+          color:#ffffff !important;
+      }
+
+      .stDownloadButton > button:hover {
+          background:#0f447d !important;
+          border-color:#0f447d !important;
+          color:#ffffff !important;
+      }
+
+      /* Selectores y campos */
+      [data-baseweb="select"] > div,
+      [data-testid="stNumberInput"] input,
+      [data-testid="stTextInput"] input {
+          border-color:#dbe4ee !important;
+      }
+
+      [data-baseweb="select"] > div:focus-within,
+      [data-testid="stNumberInput"] input:focus,
+      [data-testid="stTextInput"] input:focus {
+          border-color:#14559b !important;
+          box-shadow:0 0 0 1px #14559b !important;
+      }
+
+      /* Checkbox y radio */
+      [data-testid="stCheckbox"] input:checked + div,
+      [data-testid="stRadio"] input:checked + div {
+          border-color:#14559b !important;
+      }
+
+      /* Sliders: línea activa y control */
+      [data-testid="stSlider"] [role="slider"] {
+          background:#14559b !important;
+          border-color:#14559b !important;
+      }
+
+      /* Links */
+      .stApp a {
+          color:#175aa8;
+      }
+
+      .stApp a:hover {
+          color:#0f447d;
+      }
+
+      /* Mensajes informativos propios */
+      .ap-note {
+          border-left-color:#14559b !important;
+          background:#f6f9fc !important;
+          color:#374151 !important;
+      }
+
+      /* Contenedores / tarjetas */
+      [data-testid="stMetric"],
+      [data-testid="stDataFrame"] {
+          border-color:#dbe4ee !important;
+      }
+
       /* Responsive general */
       html, body, [data-testid="stAppViewContainer"], .stApp {
           overflow-x:hidden !important;

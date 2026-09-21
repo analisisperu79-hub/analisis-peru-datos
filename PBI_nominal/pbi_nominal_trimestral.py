@@ -51,7 +51,7 @@ SERIE = {
     "unidad": "Millones de soles",
     "fuente": "INEI / BCRP",
     "api_inicio": "1980-1",
-    "api_fin": "2030-4",
+    "api_fin": "2100-4",
     "permitir_log": True,
     "permitir_ajuste_estacional": True,
 }

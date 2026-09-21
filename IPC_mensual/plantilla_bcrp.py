@@ -46,7 +46,7 @@ warnings.filterwarnings("ignore")
 SERIE = {
     "nombre": "Índice de precios Lima Metropolitana (índice Dic.2021 = 100)",
     "codigo": "PN38705PM",
-    "nombre_corto": "PBI",
+    "nombre_corto": "IPC_mensual",
     "frecuencia": "M",              # M = mensual, Q = trimestral, A = anual
     "unidad": "Índice",
     "fuente": "INEI/BCRP",

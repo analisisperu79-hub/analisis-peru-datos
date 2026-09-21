@@ -762,8 +762,8 @@ st.markdown(
 # Base mínima: periodo + serie original.
 base_original_descarga = pd.DataFrame({
     "periodo": [
-        etiqueta_periodo_amigable(p, FREQ)
-        for p in df["periodo"].tolist()
+        etiqueta_periodo_amigable(f)
+        for f in pd.to_datetime(df["fecha"])
     ],
     f"{re.sub(r'[^a-zA-Z0-9_]+', '_', SERIE['nombre_corto'].lower()).strip('_')}_original":
         df[ORIGINAL].to_numpy(),

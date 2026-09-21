@@ -742,6 +742,21 @@ df[ORIGINAL] = df[SERIE["nombre_corto"]]
 
 
 # ============================================================
+# FUNCIÓN AUXILIAR PARA PERIODOS DE DESCARGA
+# ============================================================
+
+def etiqueta_periodo_amigable(fecha):
+    fecha = pd.Timestamp(fecha)
+
+    if FREQ == "Q":
+        return f"{fecha.year}tri{fecha.quarter}"
+
+    if FREQ == "M":
+        return f"{fecha.year}mes{fecha.month}"
+
+    return str(fecha.year)
+
+# ============================================================
 # 12.1 DESCARGA RÁPIDA DE BASE ORIGINAL
 # ============================================================
 
@@ -1185,17 +1200,6 @@ slug = re.sub(
 #   mensual    -> 2000mes1
 #   anual      -> 2000
 # ============================================================
-
-def etiqueta_periodo_amigable(fecha):
-    fecha = pd.Timestamp(fecha)
-
-    if FREQ == "Q":
-        return f"{fecha.year}tri{fecha.quarter}"
-
-    if FREQ == "M":
-        return f"{fecha.year}mes{fecha.month}"
-
-    return str(fecha.year)
 
 
 # ============================================================

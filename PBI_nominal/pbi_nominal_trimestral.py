@@ -648,9 +648,10 @@ if SERIE["permitir_ajuste_estacional"] and FREQ in ("M","Q"):
             ajuste_disponible = True
             sa = rx["ajustada"].copy(); sa.index = pd.DatetimeIndex(sa.index)
             df[AJUSTADA] = df["fecha"].map(sa)
+            st.success("Ajuste estacional X-13ARIMA-SEATS calculado correctamente.")
         else:
             usar_ajustada = False
-            st.warning(rx["mensaje"])
+            st.error(f"No fue posible calcular el ajuste estacional X-13ARIMA-SEATS. {rx['mensaje']}")
 
 # ============================================================
 # 16. SERIE BASE
@@ -731,6 +732,11 @@ if ri["orden"] == "I(1)":
     usar_diff = st.checkbox("Aplicar primera diferencia para el análisis posterior",value=False,key="usar_diff_post")
     if usar_diff:
         serie_dinamica = df[columna_base].diff()
+
+        if serie_dinamica.dropna().empty:
+            st.error("No fue posible calcular la primera diferencia con la muestra seleccionada.")
+        else:
+            st.success("Primera diferencia calculada correctamente.")
 elif ri["orden"] == "I(0)":
     st.info("El diagnóstico sugiere I(0). No se propone una primera diferencia.")
 else:

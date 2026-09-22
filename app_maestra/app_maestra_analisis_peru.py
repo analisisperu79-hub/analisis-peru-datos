@@ -110,6 +110,21 @@ SERIES = {
     "permitir_log": True,
     "permitir_ajuste_estacional": True,
 },
+     # --------------------------------------------------------
+    # Demanda interna trimestral
+    # --------------------------------------------------------
+    "PN02528AQ": {
+    "nombre": "Demanda interna real trimestral",
+    "codigo": "PN02528AQ",
+    "nombre_corto": "demanda_interna",
+    "frecuencia": "Q",
+    "unidad": "Millones de soles de 2007",
+    "fuente": "INEI / BCRP",
+    "api_inicio": "1979-1",
+    "api_fin": "2100-4",
+    "permitir_log": True,
+    "permitir_ajuste_estacional": True,
+},
 }
 
 DEFAULT_SERIE = "PM04946AA"

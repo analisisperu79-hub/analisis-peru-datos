@@ -56,7 +56,7 @@ SERIES = {
         "unidad": "Porcentaje del total de la deuda pública",
         "fuente": "MEF",
         "url_csv": (
-            "https://github.com/analisisperu79-hub/analisis-peru-datos/blob/1d2a0281db22b9b687fb1bb3b7d43916640371d2/app_maestra_manual/datos/deuda_publica_soles_mef.csv"
+            "https://raw.githubusercontent.com/analisisperu79-hub/analisis-peru-datos/refs/heads/main/app_maestra_manual/datos/deuda_publica_soles_mef.csv"
         ),
         "columna_periodo": "periodo",
         "columna_valor": "valor",

@@ -95,6 +95,21 @@ SERIES = {
         "permitir_log": True,
         "permitir_ajuste_estacional": False,
     },
+    # --------------------------------------------------------
+    # PBI real trimestral
+    # --------------------------------------------------------
+    "PN02538AQ": {
+    "nombre": "PBI real trimestral",
+    "codigo": "PN02538AQ",
+    "nombre_corto": "PBI_real",
+    "frecuencia": "Q",
+    "unidad": "Millones de soles de 2007",
+    "fuente": "INEI / BCRP",
+    "api_inicio": "1979-1",
+    "api_fin": "2100-4",
+    "permitir_log": True,
+    "permitir_ajuste_estacional": True,
+},
 }
 
 DEFAULT_SERIE = "PM04946AA"

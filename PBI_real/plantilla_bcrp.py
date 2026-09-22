@@ -44,16 +44,16 @@ warnings.filterwarnings("ignore")
 # ESTA ES LA PARTE QUE NORMALMENTE CAMBIARÁS PARA CADA NUEVA SERIE.
 
 SERIE = {
-    "nombre": "PBI nominal trimestral",
-    "codigo": "PN02550AQ",
-    "nombre_corto": "PBI",
-    "frecuencia": "Q",              # M = mensual, Q = trimestral, A = anual
-    "unidad": "Millones de soles",
+    "nombre": "PBI real anual",
+    "codigo": "PM04935AA",
+    "nombre_corto": "PBI_real",
+    "frecuencia": "A",              # M = mensual, Q = trimestral, A = anual
+    "unidad": "Millones de soles base 2007",
     "fuente": "INEI / BCRP",
-    "api_inicio": "1980-1",
-    "api_fin": "2030-4",
+    "api_inicio": "1922",
+    "api_fin": "2100",
     "permitir_log": True,
-    "permitir_ajuste_estacional": True,
+    "permitir_ajuste_estacional": False,
 }
 
 BCRP_API = "https://estadisticas.bcrp.gob.pe/estadisticas/series/api"

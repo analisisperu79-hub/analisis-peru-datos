@@ -416,16 +416,17 @@ def _expandir_anio(txt):
     yy = int(txt)
     return 1900 + yy if yy >= 50 else 2000 + yy
 
-def periodo_bcrp_a_fecha(etiqueta):
+def periodo_bcrp_a_fecha(etiqueta, frecuencia=None):
     if etiqueta is None:
         return pd.NaT
     txt = str(etiqueta).strip().upper()
+    freq = (frecuencia or FREQ).upper()
 
-    if FREQ == "A":
+    if freq == "A":
         m = re.search(r"(19\d{2}|20\d{2})", txt)
         return pd.Timestamp(int(m.group(1)),1,1) if m else pd.NaT
 
-    if FREQ == "Q":
+    if freq == "Q":
         m = re.search(r"(19\d{2}|20\d{2})\s*[QT]\s*([1-4])", txt)
         if m:
             y, q = int(m.group(1)), int(m.group(2))
@@ -436,7 +437,7 @@ def periodo_bcrp_a_fecha(etiqueta):
             return pd.Timestamp(y, 3*(q-1)+1, 1)
         return pd.NaT
 
-    if FREQ == "M":
+    if freq == "M":
         m = re.search(r"(19\d{2}|20\d{2})\s*M\s*(0?[1-9]|1[0-2])", txt)
         if m:
             return pd.Timestamp(int(m.group(1)), int(m.group(2)), 1)
@@ -453,10 +454,11 @@ def periodo_bcrp_a_fecha(etiqueta):
 
     return pd.NaT
 
-def etiqueta_periodo(fecha):
-    if FREQ == "M":
+def etiqueta_periodo(fecha, frecuencia=None):
+    freq = (frecuencia or FREQ).upper()
+    if freq == "M":
         return str(fecha.to_period("M"))
-    if FREQ == "Q":
+    if freq == "Q":
         return str(fecha.to_period("Q"))
     return str(fecha.year)
 
@@ -465,8 +467,16 @@ def etiqueta_periodo(fecha):
 # ============================================================
 
 @st.cache_data(ttl=CACHE_TTL, show_spinner=False)
-def descargar_serie_bcrp():
-    url = f"{BCRP_API}/{SERIE['codigo']}/json/{SERIE['api_inicio']}/{SERIE['api_fin']}/esp"
+def descargar_serie_bcrp(codigo, api_inicio, api_fin, nombre_corto, frecuencia):
+    """
+    Descarga una serie del BCRP.
+
+    IMPORTANTE:
+    Los parámetros forman parte de la clave de caché de Streamlit.
+    Así cada código BCRP mantiene su propio caché y una serie no puede
+    reutilizar por error los datos almacenados de otra.
+    """
+    url = f"{BCRP_API}/{codigo}/json/{api_inicio}/{api_fin}/esp"
     r = requests.get(url, timeout=30)
     r.raise_for_status()
     periodos = r.json().get("periods", [])
@@ -479,20 +489,27 @@ def descargar_serie_bcrp():
             valor = float(str(raw).replace(",", "").strip())
         except Exception:
             valor = np.nan
+
         filas.append({
             "periodo_original": item.get("name"),
-            "fecha": periodo_bcrp_a_fecha(item.get("name")),
-            SERIE["nombre_corto"]: valor,
+            "fecha": periodo_bcrp_a_fecha(item.get("name"), frecuencia),
+            nombre_corto: valor,
         })
 
     df = pd.DataFrame(filas)
     if df.empty:
         return df
-    df = (df.dropna(subset=["fecha", SERIE["nombre_corto"]])
-            .sort_values("fecha")
-            .drop_duplicates("fecha", keep="last")
-            .reset_index(drop=True))
-    df["periodo"] = df["fecha"].apply(etiqueta_periodo)
+
+    df = (
+        df.dropna(subset=["fecha", nombre_corto])
+          .sort_values("fecha")
+          .drop_duplicates("fecha", keep="last")
+          .reset_index(drop=True)
+    )
+
+    df["periodo"] = df["fecha"].apply(
+        lambda f: etiqueta_periodo(f, frecuencia)
+    )
     return df
 
 # ============================================================
@@ -752,7 +769,13 @@ def grafico_serie(df, columna, etiqueta_y):
 # ============================================================
 
 try:
-    df_total = descargar_serie_bcrp()
+    df_total = descargar_serie_bcrp(
+        SERIE["codigo"],
+        SERIE["api_inicio"],
+        SERIE["api_fin"],
+        SERIE["nombre_corto"],
+        FREQ,
+    )
 
     # Momento de consulta/recuperación mostrado al usuario.
     # No representa necesariamente la fecha oficial de publicación del BCRP.

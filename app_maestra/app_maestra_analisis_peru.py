@@ -125,6 +125,21 @@ SERIES = {
     "permitir_log": True,
     "permitir_ajuste_estacional": True,
 },
+    # --------------------------------------------------------
+    # Inversión privada real trimestral
+    # --------------------------------------------------------
+    "PN02533AQ": {
+    "nombre": "Inversión privada real trimestral",
+    "codigo": "PN02533AQ",
+    "nombre_corto": "inversion_privada",
+    "frecuencia": "Q",
+    "unidad": "Millones de soles de 2007",
+    "fuente": "INEI / BCRP",
+    "api_inicio": "1979-1",
+    "api_fin": "2100-4",
+    "permitir_log": True,
+    "permitir_ajuste_estacional": True,
+},
 }
 
 DEFAULT_SERIE = "PM04946AA"

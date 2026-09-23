@@ -937,23 +937,54 @@ st.caption(
 # ============================================================
 
 st.markdown('<div class="ap-section-title">Selección de muestra</div>', unsafe_allow_html=True)
-ki, kf = f"{SERIE['codigo']}_inicio", f"{SERIE['codigo']}_fin"
-if ki not in st.session_state: st.session_state[ki] = periodos[0]
-if kf not in st.session_state: st.session_state[kf] = periodos[-1]
 
-with st.form("form_muestra"):
-    c1,c2 = st.columns(2)
-    inicio = c1.selectbox("Desde",periodos,index=periodos.index(st.session_state[ki]))
-    fin = c2.selectbox("Hasta",periodos,index=periodos.index(st.session_state[kf]))
-    aplicar = st.form_submit_button("Aplicar intervalo",use_container_width=True,type="primary")
+# Cada categoría puede tener un rango temporal distinto.
+# Usamos claves separadas por dimensión para evitar que Streamlit conserve,
+# por ejemplo, 2025 como periodo final cuando una categoría solo llega a 2023.
+_dimension_key = re.sub(r"[^0-9A-Za-z_]+", "_", str(dimension_seleccionada)).strip("_")
+ki = f"{SERIE['codigo']}_{_dimension_key}_inicio"
+kf = f"{SERIE['codigo']}_{_dimension_key}_fin"
+
+# Inicialización y autocorrección de estados antiguos/no válidos.
+if ki not in st.session_state or st.session_state[ki] not in periodos:
+    st.session_state[ki] = periodos[0]
+
+if kf not in st.session_state or st.session_state[kf] not in periodos:
+    st.session_state[kf] = periodos[-1]
+
+with st.form(f"form_muestra_{SERIE['codigo']}_{_dimension_key}"):
+    c1, c2 = st.columns(2)
+
+    inicio = c1.selectbox(
+        "Desde",
+        periodos,
+        index=periodos.index(st.session_state[ki]),
+    )
+
+    fin = c2.selectbox(
+        "Hasta",
+        periodos,
+        index=periodos.index(st.session_state[kf]),
+    )
+
+    aplicar = st.form_submit_button(
+        "Aplicar intervalo",
+        use_container_width=True,
+        type="primary",
+    )
 
 if aplicar:
     if periodos.index(inicio) > periodos.index(fin):
         st.error("El periodo inicial no puede ser posterior al final.")
         st.stop()
-    st.session_state[ki], st.session_state[kf] = inicio, fin
 
-df = df_total.iloc[periodos.index(st.session_state[ki]):periodos.index(st.session_state[kf])+1].copy()
+    st.session_state[ki] = inicio
+    st.session_state[kf] = fin
+
+_i0 = periodos.index(st.session_state[ki])
+_i1 = periodos.index(st.session_state[kf])
+
+df = df_total.iloc[_i0:_i1 + 1].copy()
 ORIGINAL = f"{SERIE['nombre_corto']}_original"
 AJUSTADA = f"{SERIE['nombre_corto']}_ajustada"
 df[ORIGINAL] = df[SERIE["nombre_corto"]]

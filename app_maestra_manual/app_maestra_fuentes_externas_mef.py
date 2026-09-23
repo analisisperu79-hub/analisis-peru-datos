@@ -53,7 +53,7 @@ SERIES = {
         "codigo": "mef_deuda_publica_soles",
         "nombre_corto": "deuda_soles",
         "frecuencia": "Q",
-        "unidad": "Porcentaje del total de la deuda pública",
+        "unidad": "% del total de la deuda pública",
         "fuente": "MEF",
         "url_csv": (
             "https://raw.githubusercontent.com/analisisperu79-hub/analisis-peru-datos/refs/heads/main/app_maestra_manual/datos/deuda_publica_soles_mef.csv"

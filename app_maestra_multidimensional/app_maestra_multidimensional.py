@@ -62,9 +62,7 @@ SERIES = {
         # Sube el CSV limpio a:
         # datos/inei/pbi_departamento.csv
         "url_csv": (
-            "https://raw.githubusercontent.com/"
-            "analisisperu79-hub/analisis-peru-datos/main/"
-            "datos/inei/pbi_departamento.csv"
+            "https://raw.githubusercontent.com/analisisperu79-hub/analisis-peru-datos/refs/heads/main/app_maestra_multidimensional/app/pbi_regional.csv"
         ),
 
         # Estructura esperada:

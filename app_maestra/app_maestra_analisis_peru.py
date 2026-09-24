@@ -882,8 +882,7 @@ if aplicar:
 
     # Confirmación breve: aparece al aplicar el intervalo y desaparece sola.
     st.toast(
-        f"Intervalo aplicado: {inicio} – {fin}",
-        icon="✅",
+        f"Intervalo aplicado: {inicio} – {fin}"
     )
 
 df = df_total.iloc[periodos.index(st.session_state[ki]):periodos.index(st.session_state[kf])+1].copy()

@@ -849,6 +849,22 @@ for instancia in instancias:
 
     if modo == "Logaritmo":
         resultado[nombre_salida] = np.log(df_comun[col_origen])
+
+        # Cambiar también el nombre visible de la columna para que
+        # quede claro que la serie fue transformada.
+        # Ejemplo: ipc_importado -> log_ipc_importado
+        nombre_log = f"log_{nombre_salida}"
+
+        # Evitar duplicados por seguridad.
+        contador_log = 2
+        nombre_log_base = nombre_log
+        while nombre_log in resultado.columns:
+            nombre_log = f"{nombre_log_base}_{contador_log}"
+            contador_log += 1
+
+        resultado = resultado.rename(columns={nombre_salida: nombre_log})
+        nombre_salida = nombre_log
+
         etiqueta_transformacion = "Logaritmo natural"
     else:
         resultado[nombre_salida] = df_comun[col_origen]

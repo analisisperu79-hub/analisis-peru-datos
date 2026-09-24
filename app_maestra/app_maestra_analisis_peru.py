@@ -230,6 +230,21 @@ SERIES = {
     "permitir_log": True,
     "permitir_ajuste_estacional": True,
 },
+    # --------------------------------------------------------
+    # Ipc importado
+    # --------------------------------------------------------
+    "PN39523PM": {
+    "nombre": "IPC importado de Lima Metropolitana",
+    "codigo": "PN39523PM",
+    "nombre_corto": "IPC_importado",
+    "frecuencia": "M",
+    "unidad": "Índice, diciembre de 2021 = 100",
+    "fuente": "INEI / BCRP",
+    "api_inicio": "1990-12",
+    "api_fin": "2100-12",
+    "permitir_log": True,
+    "permitir_ajuste_estacional": True,
+},
 }
 
 DEFAULT_SERIE = "PM04946AA"

@@ -92,70 +92,85 @@ def normalizar_texto(s):
     s = str(s or "").strip()
     return re.sub(r"\s+", " ", s)
 
+MESES_BCRP = {
+    "ENE":1,"ENERO":1,"FEB":2,"FEBRERO":2,"MAR":3,"MARZO":3,
+    "ABR":4,"ABRIL":4,"MAY":5,"MAYO":5,"JUN":6,"JUNIO":6,
+    "JUL":7,"JULIO":7,"AGO":8,"AGOSTO":8,"SEP":9,"SET":9,
+    "SEPT":9,"SEPTIEMBRE":9,"SETIEMBRE":9,"OCT":10,"OCTUBRE":10,
+    "NOV":11,"NOVIEMBRE":11,"DIC":12,"DICIEMBRE":12,
+}
+
+def _expandir_anio_bcrp(txt):
+    txt = str(txt)
+    if len(txt) == 4:
+        return int(txt)
+    yy = int(txt)
+    return 1900 + yy if yy >= 50 else 2000 + yy
+
 def periodo_bcrp_a_fecha(periodo, frecuencia):
+    """
+    Convierte las etiquetas devueltas por BCRPData a fechas.
+
+    Soporta, entre otros:
+    - Anual: 2020
+    - Trimestral: 2020Q1, 2020T1, Q1.20, T1.80, Q1 2020
+    - Mensual: 2020M01, 2020-01, ENE.20, ENE.2020
+
+    Se usa el mismo criterio de parseo que la app maestra individual
+    de Análisis Perú para evitar diferencias entre herramientas.
+    """
     if periodo is None:
         return pd.NaT
 
-    s = normalizar_texto(periodo)
-    f = frecuencia.upper()
+    txt = str(periodo).strip().upper()
+    freq = str(frecuencia).upper()
 
-    # Anual: 2020
-    if f == "A":
-        m = re.search(r"(\d{4})", s)
-        return pd.Timestamp(int(m.group(1)), 12, 31) if m else pd.NaT
+    if freq == "A":
+        m = re.search(r"(19\d{2}|20\d{2})", txt)
+        return pd.Timestamp(int(m.group(1)), 1, 1) if m else pd.NaT
 
-    # Trimestral: 2020Q1, 2020-1, 2020 T1, I Trim.2020, etc.
-    if f == "Q":
-        patrones = [
-            r"(\d{4})\s*[-/]?\s*[QqTt]\s*([1-4])",
-            r"(\d{4})\s*[-/]\s*([1-4])",
-            r"([1-4])\s*[QqTt]\s*(\d{4})",
-        ]
-        for i, pat in enumerate(patrones):
-            m = re.search(pat, s)
-            if m:
-                if i < 2:
-                    anio, q = int(m.group(1)), int(m.group(2))
-                else:
-                    q, anio = int(m.group(1)), int(m.group(2))
-                mes = q * 3
-                return pd.Timestamp(anio, mes, 1) + pd.offsets.MonthEnd(0)
-
-        # nombres BCRP tipo "T1.2020" / "Q1.2020"
-        m = re.search(r"[QqTt]\s*([1-4]).*?(\d{4})", s)
+    if freq == "Q":
+        # Ej.: 1980Q1 / 1980 T1
+        m = re.search(r"(19\d{2}|20\d{2})\s*[QT]\s*([1-4])", txt)
         if m:
-            q, anio = int(m.group(1)), int(m.group(2))
-            return pd.Timestamp(anio, q * 3, 1) + pd.offsets.MonthEnd(0)
+            y, q = int(m.group(1)), int(m.group(2))
+            return pd.Timestamp(y, 3 * (q - 1) + 1, 1)
 
-    # Mensual: nombres en español o formatos numéricos.
-    if f == "M":
-        meses = {
-            "ene":1, "enero":1, "jan":1,
-            "feb":2, "febrero":2,
-            "mar":3, "marzo":3,
-            "abr":4, "abril":4, "apr":4,
-            "may":5, "mayo":5,
-            "jun":6, "junio":6,
-            "jul":7, "julio":7,
-            "ago":8, "agosto":8, "aug":8,
-            "sep":9, "sept":9, "septiembre":9,
-            "oct":10, "octubre":10,
-            "nov":11, "noviembre":11,
-            "dic":12, "diciembre":12, "dec":12,
-        }
-        sl = s.lower().replace(".", " ")
-        anio_m = re.search(r"(\d{4})", sl)
-        if anio_m:
-            anio = int(anio_m.group(1))
-            for nombre, mes in meses.items():
-                if re.search(rf"\b{re.escape(nombre)}\b", sl):
-                    return pd.Timestamp(anio, mes, 1) + pd.offsets.MonthEnd(0)
-
-        m = re.search(r"(\d{4})\s*[-/]\s*(\d{1,2})", s)
+        # Ej.: Q1.80 / T1.80 / Q1 2020
+        m = re.search(r"[QT]\s*([1-4])\D*(\d{2,4})", txt)
         if m:
-            anio, mes = int(m.group(1)), int(m.group(2))
-            if 1 <= mes <= 12:
-                return pd.Timestamp(anio, mes, 1) + pd.offsets.MonthEnd(0)
+            q = int(m.group(1))
+            y = _expandir_anio_bcrp(m.group(2))
+            return pd.Timestamp(y, 3 * (q - 1) + 1, 1)
+
+        # Ej.: 1980-1
+        m = re.search(r"(19\d{2}|20\d{2})\s*[-/]\s*([1-4])", txt)
+        if m:
+            y, q = int(m.group(1)), int(m.group(2))
+            return pd.Timestamp(y, 3 * (q - 1) + 1, 1)
+
+        return pd.NaT
+
+    if freq == "M":
+        # Ej.: 2020M01
+        m = re.search(r"(19\d{2}|20\d{2})\s*M\s*(0?[1-9]|1[0-2])", txt)
+        if m:
+            return pd.Timestamp(int(m.group(1)), int(m.group(2)), 1)
+
+        # Ej.: 2020-01 / 2020/01
+        m = re.search(r"(19\d{2}|20\d{2})\D+(0?[1-9]|1[0-2])", txt)
+        if m:
+            return pd.Timestamp(int(m.group(1)), int(m.group(2)), 1)
+
+        # Ej.: ENE.20 / ENE.2020
+        ymatch = re.search(r"(19\d{2}|20\d{2}|\d{2})", txt)
+        if ymatch:
+            y = _expandir_anio_bcrp(ymatch.group(1))
+            for nombre, mes in MESES_BCRP.items():
+                if re.search(rf"\b{nombre}\b", txt):
+                    return pd.Timestamp(y, mes, 1)
+
+        return pd.NaT
 
     return pd.NaT
 
@@ -197,6 +212,15 @@ def descargar_bcrp(codigo, api_inicio, api_fin, frecuencia):
     df = pd.DataFrame(filas)
     if df.empty:
         return df
+
+    # Si hubo respuesta de BCRP pero ninguna etiqueta pudo convertirse,
+    # lanzamos un error descriptivo en lugar de dejar una serie vacía.
+    if df["fecha"].notna().sum() == 0:
+        ejemplos = [str(x.get("name")) for x in periodos[:5]]
+        raise ValueError(
+            "BCRP devolvió observaciones, pero no fue posible interpretar "
+            f"las etiquetas de periodo. Ejemplos recibidos: {ejemplos}"
+        )
 
     return (
         df.dropna(subset=["fecha"])

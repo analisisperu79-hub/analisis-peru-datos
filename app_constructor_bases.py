@@ -574,24 +574,53 @@ for i in range(num_series):
             "dimension": dimension,
         })
 
-if len(instancias) != num_series:
-    st.info("Selecciona todas las series para continuar.")
-    st.stop()
+# ============================================================
+# BOTÓN PARA PASAR A LA SIGUIENTE FASE
+# ============================================================
+
+seleccion_completa = len(instancias) == num_series
 
 incompletas = [
     x for x in instancias
     if SERIES_CATALOGO[x["codigo"]]["tipo_fuente"] == "csv_multidimensional"
     and not x["dimension"]
 ]
+
 if incompletas:
-    st.info("Completa la selección de departamento/dimensión para continuar.")
-    st.stop()
+    seleccion_completa = False
 
 tuplas = [(x["codigo"], x["dimension"]) for x in instancias]
-if len(set(tuplas)) != len(tuplas):
+hay_duplicados = len(set(tuplas)) != len(tuplas)
+
+if hay_duplicados:
+    seleccion_completa = False
     st.error(
         "No puedes seleccionar exactamente la misma serie y dimensión más de una vez."
     )
+
+# Firma exacta de la selección actual.
+# Si el usuario cambia una serie, frecuencia, cantidad o departamento,
+# deberá confirmar nuevamente antes de pasar a la siguiente fase.
+firma_seleccion_fase1 = (
+    frecuencia,
+    num_series,
+    tuple(tuplas),
+)
+
+continuar_fase1 = st.button(
+    "Continuar",
+    type="primary",
+    use_container_width=False,
+    disabled=not seleccion_completa,
+    key="boton_continuar_fase1",
+)
+
+if continuar_fase1:
+    st.session_state["constructor_fase1_confirmada"] = firma_seleccion_fase1
+
+# Solo se muestran las siguientes fases cuando la selección actual
+# coincide exactamente con la selección que el usuario confirmó.
+if st.session_state.get("constructor_fase1_confirmada") != firma_seleccion_fase1:
     st.stop()
 
 # ============================================================

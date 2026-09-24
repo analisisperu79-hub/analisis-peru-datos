@@ -200,6 +200,21 @@ SERIES = {
     "permitir_log": True,
     "permitir_ajuste_estacional": True,
 },
+     # --------------------------------------------------------
+    # Ipc transables
+    # --------------------------------------------------------
+    "PN38709PM": {
+    "nombre": "IPC transables de Lima Metropolitana",
+    "codigo": "PN38709PM",
+    "nombre_corto": "IPC_transables",
+    "frecuencia": "M",
+    "unidad": "Índice, diciembre de 2021 = 100",
+    "fuente": "INEI / BCRP",
+    "api_inicio": "1992-1",
+    "api_fin": "2100-12",
+    "permitir_log": True,
+    "permitir_ajuste_estacional": True,
+},
 }
 
 DEFAULT_SERIE = "PM04946AA"

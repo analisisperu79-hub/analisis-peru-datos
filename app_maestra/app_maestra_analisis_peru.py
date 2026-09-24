@@ -877,7 +877,14 @@ if aplicar:
     if periodos.index(inicio) > periodos.index(fin):
         st.error("El periodo inicial no puede ser posterior al final.")
         st.stop()
+
     st.session_state[ki], st.session_state[kf] = inicio, fin
+
+    # Confirmación breve: aparece al aplicar el intervalo y desaparece sola.
+    st.toast(
+        f"Intervalo aplicado: {inicio} – {fin}",
+        icon="✅",
+    )
 
 df = df_total.iloc[periodos.index(st.session_state[ki]):periodos.index(st.session_state[kf])+1].copy()
 ORIGINAL = f"{SERIE['nombre_corto']}_original"

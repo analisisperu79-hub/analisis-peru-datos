@@ -732,35 +732,85 @@ for instancia in instancias:
 st.markdown('<div class="ap-section">4. Transformaciones</div>', unsafe_allow_html=True)
 
 st.caption(
-    "La transformación se aplica de forma independiente a cada serie. "
-    "En esta primera versión se mantienen únicamente Nivel y Logaritmo."
+    "Selecciona Nivel o Logaritmo para cada serie y pulsa "
+    "«Aplicar transformaciones». La base visible y las descargas "
+    "se actualizarán únicamente cuando confirmes los cambios."
 )
 
-transformaciones = {}
-cols = st.columns(min(len(instancias), 3))
-
-for i, instancia in enumerate(instancias):
-    codigo = instancia["codigo"]
-    dimension = instancia["dimension"]
-    col = instancia["columna"]
-    cfg = SERIES_CATALOGO[codigo]
-    opciones = ["Nivel"]
-
-    valores = df_comun[col].dropna()
-    log_disponible = (
-        bool(cfg.get("permitir_log", False))
-        and not valores.empty
-        and (valores > 0).all()
+# Identificador de la selección actual.
+# Si el usuario cambia las series o una dimensión (por ejemplo, departamento),
+# se reinician automáticamente las transformaciones aplicadas a Nivel.
+firma_seleccion = tuple(
+    (
+        instancia["codigo"],
+        instancia["dimension"] or "",
+        instancia["columna"],
     )
-    if log_disponible:
-        opciones.append("Logaritmo")
+    for instancia in instancias
+)
 
-    transformaciones[col] = cols[i % len(cols)].radio(
-        nombre_instancia(codigo, dimension),
-        options=opciones,
-        horizontal=False,
-        key=f"transformacion_{i}_{codigo}",
+if st.session_state.get("constructor_firma_seleccion") != firma_seleccion:
+    st.session_state["constructor_firma_seleccion"] = firma_seleccion
+    st.session_state["constructor_transformaciones_aplicadas"] = {
+        instancia["columna"]: "Nivel"
+        for instancia in instancias
+    }
+
+transformaciones_aplicadas = st.session_state.get(
+    "constructor_transformaciones_aplicadas",
+    {
+        instancia["columna"]: "Nivel"
+        for instancia in instancias
+    },
+)
+
+# Usamos un formulario para que cambiar un radio NO modifique
+# inmediatamente la base. Solo cambia al pulsar el botón.
+with st.form("form_transformaciones_constructor"):
+    transformaciones_propuestas = {}
+    cols = st.columns(min(len(instancias), 3))
+
+    for i, instancia in enumerate(instancias):
+        codigo = instancia["codigo"]
+        dimension = instancia["dimension"]
+        col = instancia["columna"]
+        cfg = SERIES_CATALOGO[codigo]
+        opciones = ["Nivel"]
+
+        valores = df_comun[col].dropna()
+        log_disponible = (
+            bool(cfg.get("permitir_log", False))
+            and not valores.empty
+            and (valores > 0).all()
+        )
+
+        if log_disponible:
+            opciones.append("Logaritmo")
+
+        valor_actual = transformaciones_aplicadas.get(col, "Nivel")
+        if valor_actual not in opciones:
+            valor_actual = "Nivel"
+
+        transformaciones_propuestas[col] = cols[i % len(cols)].radio(
+            nombre_instancia(codigo, dimension),
+            options=opciones,
+            index=opciones.index(valor_actual),
+            horizontal=False,
+            key=f"transformacion_form_{i}_{codigo}_{dimension or 'sin_dimension'}",
+        )
+
+    aplicar_transformaciones = st.form_submit_button(
+        "Aplicar transformaciones",
+        type="primary",
+        use_container_width=False,
     )
+
+if aplicar_transformaciones:
+    st.session_state["constructor_transformaciones_aplicadas"] = dict(
+        transformaciones_propuestas
+    )
+    transformaciones_aplicadas = dict(transformaciones_propuestas)
+    st.toast("Transformaciones aplicadas a la base.", icon="✅")
 
 # ============================================================
 # 9. BASE RESULTANTE
@@ -775,7 +825,11 @@ for instancia in instancias:
     dimension = instancia["dimension"]
     col_origen = instancia["columna"]
     cfg = SERIES_CATALOGO[codigo]
-    modo = transformaciones[col_origen]
+
+    # IMPORTANTE:
+    # Se usa la transformación CONFIRMADA con el botón, no el valor
+    # que pueda estar actualmente seleccionado pero aún no aplicado.
+    modo = transformaciones_aplicadas.get(col_origen, "Nivel")
 
     nombre_salida = cfg["nombre_corto"]
 
@@ -832,6 +886,19 @@ if solo_completas:
     ).reset_index(drop=True)
 
 st.markdown('<div class="ap-section">5. Base resultante</div>', unsafe_allow_html=True)
+
+# Mostrar claramente qué transformación está realmente aplicada.
+transformaciones_resumen = []
+for instancia in instancias:
+    col = instancia["columna"]
+    transformaciones_resumen.append(
+        f"{nombre_instancia(instancia['codigo'], instancia['dimension'])}: "
+        f"{transformaciones_aplicadas.get(col, 'Nivel')}"
+    )
+
+st.caption(
+    "Transformaciones aplicadas: " + " · ".join(transformaciones_resumen)
+)
 
 tabla_pantalla = dataset_resultado.drop(columns=["fecha"]).copy()
 st.dataframe(

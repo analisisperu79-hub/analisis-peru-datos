@@ -689,8 +689,7 @@ with st.expander("Ver cobertura original de cada serie"):
         cfg = SERIES_CATALOGO[codigo]
         ini, fin = rangos[col]
         cobertura.append({
-            "Serie": cfg["nombre"],
-            cfg.get("etiqueta_dimension", "Dimensión"): dimension or "—",
+            "Serie": nombre_instancia(codigo, dimension),
             "Código": codigo,
             "Fuente": cfg["fuente"],
             "Inicio original": etiqueta_periodo(ini, frecuencia),
@@ -850,8 +849,12 @@ st.caption(
 )
 
 with st.expander("Metadatos de la base construida"):
+    metadata_visible = pd.DataFrame(metadata_resultado).drop(
+        columns=["dimension", "tipo_dimension"],
+        errors="ignore",
+    )
     st.dataframe(
-        pd.DataFrame(metadata_resultado),
+        metadata_visible,
         use_container_width=True,
         hide_index=True,
     )
@@ -898,29 +901,9 @@ except Exception:
     d3.info("Stata no disponible para esta combinación.")
 
 # ============================================================
-# 11. PUENTE A LA FUTURA APP ECONOMÉTRICA
+# 11. ESTRUCTURA INTERNA PARA FUTURO USO
 # ============================================================
 
-st.markdown('<div class="ap-section">Próximamente: laboratorio econométrico</div>', unsafe_allow_html=True)
+# El dataset_resultado y metadata_resultado quedan disponibles internamente
+# para futuras herramientas, sin mostrar mensajes adicionales al usuario.
 
-st.markdown(
-    """
-    <div class="ap-note">
-      La base construida ya utiliza una estructura compatible con el futuro
-      laboratorio econométrico de Análisis Perú. Más adelante podrá enviarse
-      directamente a pruebas de estacionariedad, cointegración, VAR, VECM,
-      causalidad de Granger y otros modelos, sin reconstruir nuevamente los datos.
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
-# Contrato lógico para la futura página econométrica:
-# dataset_resultado:
-#   periodo | fecha | variable_1 | variable_2 | ...
-#
-# metadata_resultado:
-#   columna | codigo | nombre | fuente | frecuencia |
-#   unidad_original | transformacion
-#
-# NO se ejecuta econometría en esta V1.

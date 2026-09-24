@@ -193,8 +193,7 @@ SERIES_CATALOGO = {
         "fuente": "INEI",
         "tipo_fuente": "csv_multidimensional",
         "url_csv": (
-            "https://raw.githubusercontent.com/analisisperu79-hub/"
-            "analisis-peru-datos/main/datos/inei/pbi_departamento.csv"
+            "https://raw.githubusercontent.com/analisisperu79-hub/analisis-peru-datos/refs/heads/main/app_maestra_multidimensional/app/pbi_regional.csv"
         ),
         "columna_periodo": "periodo",
         "columna_dimension": "departamento",
@@ -217,8 +216,7 @@ SERIES_CATALOGO = {
         "fuente": "MEF",
         "tipo_fuente": "csv",
         "url_csv": (
-            "https://raw.githubusercontent.com/analisisperu79-hub/"
-            "analisis-peru-datos/main/datos/mef/deuda_publica_soles_mef.csv"
+            "https://raw.githubusercontent.com/analisisperu79-hub/analisis-peru-datos/refs/heads/main/app_maestra_manual/datos/deuda_publica_soles_mef.csv"
         ),
         "columna_periodo": "periodo",
         "columna_valor": "valor",

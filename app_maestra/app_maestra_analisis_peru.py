@@ -140,6 +140,9 @@ SERIES = {
     "permitir_log": True,
     "permitir_ajuste_estacional": True,
 },
+    # --------------------------------------------------------
+    # IPC
+    # --------------------------------------------------------
     "PN38705PM": {
     "nombre": "Índice de Precios al Consumidor de Lima Metropolitana",
     "codigo": "PN38705PM",
@@ -148,6 +151,21 @@ SERIES = {
     "unidad": "Índice, diciembre de 2021 = 100",
     "fuente": "INEI / BCRP",
     "api_inicio": "1991-1",
+    "api_fin": "2100-12",
+    "permitir_log": True,
+    "permitir_ajuste_estacional": True,
+},
+    # --------------------------------------------------------
+    # IÇ subyacente
+    # --------------------------------------------------------
+    "PN38708PM": {
+    "nombre": "IPC subyacente de Lima Metropolitana",
+    "codigo": "PN38708PM",
+    "nombre_corto": "IPC_subyacente",
+    "frecuencia": "M",
+    "unidad": "Índice, diciembre de 2021 = 100",
+    "fuente": "INEI / BCRP",
+    "api_inicio": "1992-1",
     "api_fin": "2100-12",
     "permitir_log": True,
     "permitir_ajuste_estacional": True,

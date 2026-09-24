@@ -156,12 +156,27 @@ SERIES = {
     "permitir_ajuste_estacional": True,
 },
     # --------------------------------------------------------
-    # IÇ subyacente
+    # Ipc subyacente
     # --------------------------------------------------------
     "PN38708PM": {
     "nombre": "IPC subyacente de Lima Metropolitana",
     "codigo": "PN38708PM",
     "nombre_corto": "IPC_subyacente",
+    "frecuencia": "M",
+    "unidad": "Índice, diciembre de 2021 = 100",
+    "fuente": "INEI / BCRP",
+    "api_inicio": "1992-1",
+    "api_fin": "2100-12",
+    "permitir_log": True,
+    "permitir_ajuste_estacional": True,
+},
+    # --------------------------------------------------------
+    # Ipc sin alimentos y energia
+    # --------------------------------------------------------
+    "PN38707PM": {
+    "nombre": "IPC sin alimentos y energía de Lima Metropolitana",
+    "codigo": "PN38707PM",
+    "nombre_corto": "IPC_sin_alimentos_energia",
     "frecuencia": "M",
     "unidad": "Índice, diciembre de 2021 = 100",
     "fuente": "INEI / BCRP",

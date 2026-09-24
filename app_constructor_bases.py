@@ -184,6 +184,28 @@ def etiqueta_periodo(fecha, frecuencia):
         return f"{fecha.year}Q{((fecha.month - 1)//3)+1}"
     return str(fecha.year)
 
+
+def normalizar_fecha_frecuencia(fecha, frecuencia):
+    """
+    Lleva todas las fuentes a una fecha canónica por periodo.
+    Evita que una fuente use inicio de trimestre y otra fin de trimestre
+    para representar exactamente el mismo 2000Q4.
+    """
+    if pd.isna(fecha):
+        return pd.NaT
+
+    f = str(frecuencia).upper()
+    ts = pd.Timestamp(fecha)
+
+    if f == "M":
+        return ts.to_period("M").start_time
+    if f == "Q":
+        return ts.to_period("Q").start_time
+    if f == "A":
+        return ts.to_period("Y").start_time
+
+    return ts
+
 # ============================================================
 # 2. DESCARGA DE SERIES
 # ============================================================
@@ -222,9 +244,13 @@ def descargar_bcrp(codigo, api_inicio, api_fin, frecuencia):
             f"las etiquetas de periodo. Ejemplos recibidos: {ejemplos}"
         )
 
+    df = df.dropna(subset=["fecha"]).copy()
+    df["fecha"] = df["fecha"].apply(
+        lambda x: normalizar_fecha_frecuencia(x, frecuencia)
+    )
+
     return (
-        df.dropna(subset=["fecha"])
-          .sort_values("fecha")
+        df.sort_values("fecha")
           .drop_duplicates("fecha", keep="last")
           .reset_index(drop=True)
     )
@@ -245,9 +271,13 @@ def descargar_csv(url_csv, columna_periodo, columna_valor, frecuencia):
     )
     out["valor"] = pd.to_numeric(df[columna_valor], errors="coerce")
 
+    out = out.dropna(subset=["fecha"]).copy()
+    out["fecha"] = out["fecha"].apply(
+        lambda x: normalizar_fecha_frecuencia(x, frecuencia)
+    )
+
     return (
-        out.dropna(subset=["fecha"])
-           .sort_values("fecha")
+        out.sort_values("fecha")
            .drop_duplicates("fecha", keep="last")
            .reset_index(drop=True)
     )
@@ -278,9 +308,13 @@ def leer_csv_multidimensional(
     out["dimension"] = df[columna_dimension].astype(str).str.strip()
     out["valor"] = pd.to_numeric(df[columna_valor], errors="coerce")
 
+    out = out.dropna(subset=["fecha"]).copy()
+    out["fecha"] = out["fecha"].apply(
+        lambda x: normalizar_fecha_frecuencia(x, frecuencia)
+    )
+
     return (
-        out.dropna(subset=["fecha"])
-           .sort_values(["dimension", "fecha"])
+        out.sort_values(["dimension", "fecha"])
            .reset_index(drop=True)
     )
 
@@ -455,17 +489,27 @@ num_series = st.slider(
     step=1,
 )
 
-codigos = list(disponibles.keys())
 instancias = []
+codigos_escalares_elegidos = set()
+dimensiones_elegidas_por_codigo = {}
 
 for i in range(num_series):
     st.markdown(f"**Serie {i+1}**")
-
     cserie, cdimension = st.columns([1.7, 1])
+
+    # Las series escalares ya elegidas desaparecen de los siguientes selectores.
+    # Las multidimensionales permanecen disponibles para permitir, por ejemplo,
+    # PBI Tumbes + PBI Piura.
+    opciones_codigo = [""]
+    for codigo, cfg in disponibles.items():
+        if cfg["tipo_fuente"] != "csv_multidimensional":
+            if codigo in codigos_escalares_elegidos:
+                continue
+        opciones_codigo.append(codigo)
 
     codigo = cserie.selectbox(
         "Variable",
-        options=[""] + codigos,
+        options=opciones_codigo,
         index=0,
         format_func=lambda c: (
             "Seleccionar..."
@@ -491,20 +535,38 @@ for i in range(num_series):
                     cfg["frecuencia"],
                 )
             except Exception as e:
-                st.error(f"No fue posible cargar las opciones de {cfg['etiqueta_dimension']}: {e}")
+                st.error(
+                    f"No fue posible cargar las opciones de "
+                    f"{cfg['etiqueta_dimension']}: {e}"
+                )
                 st.stop()
+
+            # Si esa base multidimensional ya fue usada antes, ocultamos
+            # únicamente las dimensiones ya seleccionadas.
+            usadas = dimensiones_elegidas_por_codigo.get(codigo, set())
+            dimensiones_disponibles = [
+                d for d in dimensiones if d not in usadas
+            ]
 
             dimension = cdimension.selectbox(
                 cfg["etiqueta_dimension"],
-                options=[""] + dimensiones,
+                options=[""] + dimensiones_disponibles,
                 index=0,
                 key=f"dimension_selector_{i}",
             )
 
             if not dimension:
-                cdimension.caption(f"Selecciona {cfg['etiqueta_dimension'].lower()}.")
+                cdimension.caption(
+                    f"Selecciona {cfg['etiqueta_dimension'].lower()}."
+                )
+            else:
+                dimensiones_elegidas_por_codigo.setdefault(
+                    codigo, set()
+                ).add(dimension)
+
         else:
             cdimension.caption("Serie nacional / escalar")
+            codigos_escalares_elegidos.add(codigo)
 
         instancias.append({
             "slot": i,
@@ -516,7 +578,6 @@ if len(instancias) != num_series:
     st.info("Selecciona todas las series para continuar.")
     st.stop()
 
-# Todas las multidimensionales deben tener su dimensión elegida.
 incompletas = [
     x for x in instancias
     if SERIES_CATALOGO[x["codigo"]]["tipo_fuente"] == "csv_multidimensional"
@@ -526,13 +587,10 @@ if incompletas:
     st.info("Completa la selección de departamento/dimensión para continuar.")
     st.stop()
 
-# No se permite repetir exactamente la misma instancia.
-# Sí se permite, por ejemplo, PBI departamental Tumbes + PBI departamental Piura.
 tuplas = [(x["codigo"], x["dimension"]) for x in instancias]
 if len(set(tuplas)) != len(tuplas):
     st.error(
-        "No puedes seleccionar exactamente la misma serie y dimensión más de una vez. "
-        "Sí puedes elegir distintos departamentos de una misma base multidimensional."
+        "No puedes seleccionar exactamente la misma serie y dimensión más de una vez."
     )
     st.stop()
 
@@ -613,6 +671,14 @@ else:
         f"Hay {faltantes_total} valores faltantes dentro del periodo común. "
         "No se han interpolado ni rellenado."
     )
+
+    if filas_completas == 0:
+        st.info(
+            "No hay ninguna fila completa entre todas las series seleccionadas. "
+            "Esto puede deberse a observaciones realmente faltantes o a que alguna "
+            "fuente usa una representación temporal distinta. La versión actual "
+            "normaliza todas las fechas a un periodo canónico antes de combinarlas."
+        )
 
 with st.expander("Ver cobertura original de cada serie"):
     cobertura = []

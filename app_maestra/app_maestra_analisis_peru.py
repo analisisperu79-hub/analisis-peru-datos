@@ -365,6 +365,18 @@ SERIES = {
     "permitir_log": True,
     "permitir_ajuste_estacional": False,
 },
+    "PN01251PM": {
+    "nombre": "Tipo de cambio real bilateral",
+    "codigo": "PN01251PM",
+    "nombre_corto": "tipo_cambio_real_bilateral",
+    "frecuencia": "M",
+    "unidad": "Índice (base 2009=100)",
+    "fuente": "BCRP",
+    "api_inicio": "1991-01",
+    "api_fin": "2100-12",
+    "permitir_log": True,
+    "permitir_ajuste_estacional": False,
+},
 }
 
 DEFAULT_SERIE = "PM04946AA"

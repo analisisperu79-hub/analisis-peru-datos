@@ -79,6 +79,35 @@ st.markdown(
         border-color:#14559b !important;
         color:white !important;
       }
+
+      /* =====================================================
+         MÉTRICAS MÁS COMPACTAS
+         Evita que "Periodo común" se corte en pantallas estrechas.
+         ===================================================== */
+      div[data-testid="stMetric"] {
+        padding-top: 0.15rem;
+        padding-bottom: 0.15rem;
+      }
+
+      div[data-testid="stMetricLabel"] {
+        font-size: 0.86rem !important;
+      }
+
+      div[data-testid="stMetricValue"] {
+        font-size: 1.72rem !important;
+        line-height: 1.12 !important;
+        white-space: nowrap !important;
+      }
+
+      @media (max-width: 900px) {
+        div[data-testid="stMetricValue"] {
+          font-size: 1.45rem !important;
+        }
+
+        div[data-testid="stMetricLabel"] {
+          font-size: 0.80rem !important;
+        }
+      }
     </style>
     """,
     unsafe_allow_html=True,

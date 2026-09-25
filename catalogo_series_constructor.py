@@ -218,6 +218,18 @@ SERIES_CATALOGO = {
     "api_fin": "2100-12",
     "permitir_log": False,
 },
+    "PN00214MM": {
+    "nombre": "Liquidez total del sistema financiero",
+    "nombre_corto": "liquidez_total",
+    "categoria": "Monetario y financiero",
+    "frecuencia": "M",
+    "unidad": "Millones de soles",
+    "fuente": "BCRP",
+    "tipo_fuente": "bcrp",
+    "api_inicio": "1992-01",
+    "api_fin": "2100-12",
+    "permitir_log": True,
+},
 
     # --------------------------------------------------------
     # MULTIDIMENSIONALES — INEI

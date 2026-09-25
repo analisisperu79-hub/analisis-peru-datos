@@ -529,7 +529,6 @@ for i in range(num_series):
             else SERIES_CATALOGO[c]["nombre"]
         ),
         key=f"serie_selector_{i}",
-        label_visibility="collapsed",
     )
 
     dimension = None
@@ -619,13 +618,17 @@ firma_seleccion_fase1 = (
     tuple(tuplas),
 )
 
-continuar_fase1 = st.button(
-    "Continuar",
-    type="primary",
-    use_container_width=False,
-    disabled=not seleccion_completa,
-    key="boton_continuar_fase1",
-)
+st.markdown("<div style='height:.25rem'></div>", unsafe_allow_html=True)
+col_boton_continuar, col_boton_vacio = st.columns([1.7, 1])
+
+with col_boton_continuar:
+    continuar_fase1 = st.button(
+        "Continuar",
+        type="primary",
+        use_container_width=True,
+        disabled=not seleccion_completa,
+        key="boton_continuar_fase1",
+    )
 
 if continuar_fase1:
     st.session_state["constructor_fase1_confirmada"] = firma_seleccion_fase1

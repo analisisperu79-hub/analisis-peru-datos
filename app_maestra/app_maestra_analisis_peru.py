@@ -377,6 +377,18 @@ SERIES = {
     "permitir_log": True,
     "permitir_ajuste_estacional": False,
 },
+    "PN38714BM": {
+    "nombre": "Exportaciones totales",
+    "codigo": "PN38714BM",
+    "nombre_corto": "exportaciones_totales",
+    "frecuencia": "M",
+    "unidad": "Millones de US$",
+    "fuente": "BCRP",
+    "api_inicio": "1996-01",
+    "api_fin": "2100-12",
+    "permitir_log": True,
+    "permitir_ajuste_estacional": True,
+},
 }
 
 DEFAULT_SERIE = "PM04946AA"

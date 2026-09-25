@@ -230,6 +230,18 @@ SERIES_CATALOGO = {
     "api_fin": "2100-12",
     "permitir_log": True,
 },
+    "PN00518MM": {
+    "nombre": "Crédito total del sistema financiero al sector privado",
+    "nombre_corto": "credito_sector_privado",
+    "categoria": "Monetario y financiero",
+    "frecuencia": "M",
+    "unidad": "Millones de soles",
+    "fuente": "BCRP",
+    "tipo_fuente": "bcrp",
+    "api_inicio": "1998-12",
+    "api_fin": "2100-12",
+    "permitir_log": True,
+},
 
     # --------------------------------------------------------
     # MULTIDIMENSIONALES — INEI

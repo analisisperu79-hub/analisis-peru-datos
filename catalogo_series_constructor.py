@@ -266,6 +266,18 @@ SERIES_CATALOGO = {
     "api_fin": "2100-12",
     "permitir_log": True,
 },
+    "PN01207PM": {
+    "nombre": "Tipo de cambio nominal interbancario - promedio mensual",
+    "nombre_corto": "tipo_cambio_nominal",
+    "categoria": "Sector externo",
+    "frecuencia": "M",
+    "unidad": "S/ por US$",
+    "fuente": "BCRP",
+    "tipo_fuente": "bcrp",
+    "api_inicio": "1995-01",
+    "api_fin": "2100-12",
+    "permitir_log": True,
+},
 
     # --------------------------------------------------------
     # MULTIDIMENSIONALES — INEI
@@ -273,7 +285,7 @@ SERIES_CATALOGO = {
     "inei_pbi_departamento": {
         "nombre": "PBI por departamento / Valor Agregado Bruto (VAB)",
         "nombre_corto": "pbi_departamental",
-        "categoria": "Actividad económica",
+        "categoria": "Regional",
         "frecuencia": "A",
         "unidad": "Miles de soles a precios constantes de 2007",
         "fuente": "INEI",

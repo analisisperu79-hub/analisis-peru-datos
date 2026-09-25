@@ -341,6 +341,18 @@ SERIES = {
     "permitir_log": True,
     "permitir_ajuste_estacional": False,
 },
+    "PN01207PM": {
+    "nombre": "Tipo de cambio nominal interbancario - promedio mensual",
+    "codigo": "PN01207PM",
+    "nombre_corto": "tipo_cambio_nominal",
+    "frecuencia": "M",
+    "unidad": "S/ por US$",
+    "fuente": "BCRP",
+    "api_inicio": "1995-01",
+    "api_fin": "2100-12",
+    "permitir_log": True,
+    "permitir_ajuste_estacional": False,
+},
 }
 
 DEFAULT_SERIE = "PM04946AA"

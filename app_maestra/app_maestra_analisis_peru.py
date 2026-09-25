@@ -329,6 +329,18 @@ SERIES = {
     "permitir_log": True,
     "permitir_ajuste_estacional": True,
 },
+    "PN06481IM": {
+    "nombre": "Reservas Internacionales Netas del BCRP",
+    "codigo": "PN06481IM",
+    "nombre_corto": "reservas_internacionales_netas",
+    "frecuencia": "M",
+    "unidad": "Millones de US$",
+    "fuente": "BCRP",
+    "api_inicio": "1992-01",
+    "api_fin": "2100-12",
+    "permitir_log": True,
+    "permitir_ajuste_estacional": False,
+},
 }
 
 DEFAULT_SERIE = "PM04946AA"

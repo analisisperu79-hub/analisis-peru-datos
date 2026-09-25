@@ -425,6 +425,18 @@ SERIES = {
     "permitir_log": True,
     "permitir_ajuste_estacional": False,
 },
+    "PN38975BQ": {
+    "nombre": "Balanza en cuenta corriente",
+    "codigo": "PN38975BQ",
+    "nombre_corto": "cuenta_corriente",
+    "frecuencia": "Q",
+    "unidad": "Millones de US$",
+    "fuente": "BCRP",
+    "api_inicio": "1994-Q1",
+    "api_fin": "2100-Q4",
+    "permitir_log": False,
+    "permitir_ajuste_estacional": True,
+},
 }
 
 DEFAULT_SERIE = "PM04946AA"

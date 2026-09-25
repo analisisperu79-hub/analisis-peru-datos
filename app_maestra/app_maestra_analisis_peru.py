@@ -413,6 +413,18 @@ SERIES = {
     "permitir_log": False,
     "permitir_ajuste_estacional": True,
 },
+    "PN38923BM": {
+    "nombre": "Términos de intercambio",
+    "codigo": "PN38923BM",
+    "nombre_corto": "terminos_intercambio",
+    "frecuencia": "M",
+    "unidad": "Índice (base 2007=100)",
+    "fuente": "BCRP",
+    "api_inicio": "1996-01",
+    "api_fin": "2100-12",
+    "permitir_log": True,
+    "permitir_ajuste_estacional": False,
+},
 }
 
 DEFAULT_SERIE = "PM04946AA"

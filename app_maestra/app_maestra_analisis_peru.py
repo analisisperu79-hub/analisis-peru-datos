@@ -290,6 +290,21 @@ SERIES = {
     "permitir_log": False,
     "permitir_ajuste_estacional": False,
 },
+    # --------------------------------------------------------
+    # Liquidez del sistema financiero
+    # --------------------------------------------------------
+    "PN00214MM": {
+    "nombre": "Liquidez total del sistema financiero",
+    "codigo": "PN00214MM",
+    "nombre_corto": "liquidez_total",
+    "frecuencia": "M",
+    "unidad": "Millones de soles",
+    "fuente": "BCRP",
+    "api_inicio": "1992-01",
+    "api_fin": "2100-12",
+    "permitir_log": True,
+    "permitir_ajuste_estacional": True,
+},
 }
 
 DEFAULT_SERIE = "PM04946AA"

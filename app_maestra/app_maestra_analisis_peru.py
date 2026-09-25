@@ -317,6 +317,18 @@ SERIES = {
     "permitir_log": True,
     "permitir_ajuste_estacional": True,
 },
+    "PN00486MM": {
+    "nombre": "Emisión primaria - fin de periodo",
+    "codigo": "PN00486MM",
+    "nombre_corto": "emision_primaria",
+    "frecuencia": "M",
+    "unidad": "Millones de soles",
+    "fuente": "BCRP",
+    "api_inicio": "1992-01",
+    "api_fin": "2100-12",
+    "permitir_log": True,
+    "permitir_ajuste_estacional": True,
+},
 }
 
 DEFAULT_SERIE = "PM04946AA"

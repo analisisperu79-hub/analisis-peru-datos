@@ -206,7 +206,18 @@ SERIES_CATALOGO = {
     "api_fin": "2100-12",
     "permitir_log": False,
 },
-
+    "PN07819NM": {
+    "nombre": "Tasa Interbancaria Promedio",
+    "nombre_corto": "tasa_interbancaria",
+    "categoria": "Monetario y financiero",
+    "frecuencia": "M",
+    "unidad": "Porcentaje",
+    "fuente": "BCRP",
+    "tipo_fuente": "bcrp",
+    "api_inicio": "1995-10",
+    "api_fin": "2100-12",
+    "permitir_log": False,
+},
 
     # --------------------------------------------------------
     # MULTIDIMENSIONALES — INEI

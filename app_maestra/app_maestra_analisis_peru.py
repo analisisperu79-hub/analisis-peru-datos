@@ -245,6 +245,21 @@ SERIES = {
     "permitir_log": True,
     "permitir_ajuste_estacional": True,
 },
+    # --------------------------------------------------------
+    # Ipc no subyacente
+    # --------------------------------------------------------
+    "PN39522PM": {
+    "nombre": "IPC No Subyacente de Lima Metropolitana",
+    "codigo": "PN39522PM",
+    "nombre_corto": "IPC_no_subyacente",
+    "frecuencia": "M",
+    "unidad": "Índice, diciembre de 2021 = 100",
+    "fuente": "INEI / BCRP",
+    "api_inicio": "1990-12",
+    "api_fin": "2100-12",
+    "permitir_log": True,
+    "permitir_ajuste_estacional": True,
+},
 }
 
 DEFAULT_SERIE = "PM04946AA"

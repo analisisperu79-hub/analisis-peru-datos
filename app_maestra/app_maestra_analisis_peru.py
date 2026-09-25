@@ -275,6 +275,21 @@ SERIES = {
     "permitir_log": False,
     "permitir_ajuste_estacional": False,
 },
+    # --------------------------------------------------------
+    # Tasa interbancaria
+    # --------------------------------------------------------
+    "PN07819NM": {
+    "nombre": "Tasa Interbancaria Promedio",
+    "codigo": "PN07819NM",
+    "nombre_corto": "tasa_interbancaria",
+    "frecuencia": "M",
+    "unidad": "Porcentaje",
+    "fuente": "BCRP",
+    "api_inicio": "1995-10",
+    "api_fin": "2100-12",
+    "permitir_log": False,
+    "permitir_ajuste_estacional": False,
+},
 }
 
 DEFAULT_SERIE = "PM04946AA"

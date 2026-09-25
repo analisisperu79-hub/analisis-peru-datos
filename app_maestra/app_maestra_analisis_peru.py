@@ -305,6 +305,18 @@ SERIES = {
     "permitir_log": True,
     "permitir_ajuste_estacional": True,
 },
+    "PN00518MM": {
+    "nombre": "Crédito total del sistema financiero al sector privado",
+    "codigo": "PN00518MM",
+    "nombre_corto": "credito_sector_privado",
+    "frecuencia": "M",
+    "unidad": "Millones de soles",
+    "fuente": "BCRP",
+    "api_inicio": "1998-12",
+    "api_fin": "2100-12",
+    "permitir_log": True,
+    "permitir_ajuste_estacional": True,
+},
 }
 
 DEFAULT_SERIE = "PM04946AA"

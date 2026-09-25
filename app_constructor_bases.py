@@ -471,8 +471,178 @@ def dataframe_a_stata(df):
 # Se elimina aquí la cabecera redundante para aprovechar mejor la altura
 # del iframe.
 
+
 # ============================================================
-# 5. SELECCIÓN
+# 5. DIAGNÓSTICO AUTOMÁTICO DEL CATÁLOGO
+# ============================================================
+# Esta sección no aparece al público normalmente.
+# Para verla, abre la app añadiendo ?admin=1 a la URL.
+#
+# Ejemplo:
+# https://TU-APP.streamlit.app/?admin=1
+#
+# El diagnóstico se actualiza automáticamente cada vez que
+# agregas o modificas una serie en catalogo_series_constructor.py.
+# ============================================================
+
+admin_activo = str(st.query_params.get("admin", "0")).lower() in {
+    "1", "true", "si", "sí"
+}
+
+if admin_activo:
+    with st.expander("Diagnóstico del catálogo · Administración", expanded=True):
+
+        total_series = len(SERIES_CATALOGO)
+
+        conteo_frecuencias = {
+            "M": sum(
+                1 for cfg in SERIES_CATALOGO.values()
+                if cfg.get("frecuencia") == "M"
+            ),
+            "Q": sum(
+                1 for cfg in SERIES_CATALOGO.values()
+                if cfg.get("frecuencia") == "Q"
+            ),
+            "A": sum(
+                1 for cfg in SERIES_CATALOGO.values()
+                if cfg.get("frecuencia") == "A"
+            ),
+        }
+
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Total", total_series)
+        c2.metric("Mensuales", conteo_frecuencias["M"])
+        c3.metric("Trimestrales", conteo_frecuencias["Q"])
+        c4.metric("Anuales", conteo_frecuencias["A"])
+
+        errores_catalogo = []
+
+        campos_comunes = {
+            "nombre",
+            "nombre_corto",
+            "categoria",
+            "frecuencia",
+            "unidad",
+            "fuente",
+            "tipo_fuente",
+        }
+
+        for codigo_catalogo, cfg_catalogo in SERIES_CATALOGO.items():
+
+            faltantes = sorted(
+                campo for campo in campos_comunes
+                if campo not in cfg_catalogo
+            )
+
+            if faltantes:
+                errores_catalogo.append(
+                    f"{codigo_catalogo}: faltan "
+                    + ", ".join(faltantes)
+                )
+
+            frecuencia_catalogo = cfg_catalogo.get("frecuencia")
+            if frecuencia_catalogo not in {"M", "Q", "A"}:
+                errores_catalogo.append(
+                    f"{codigo_catalogo}: frecuencia no válida "
+                    f"({frecuencia_catalogo})"
+                )
+
+            tipo_fuente_catalogo = cfg_catalogo.get("tipo_fuente")
+
+            if tipo_fuente_catalogo == "bcrp":
+                for campo in ("api_inicio", "api_fin"):
+                    if campo not in cfg_catalogo:
+                        errores_catalogo.append(
+                            f"{codigo_catalogo}: falta {campo}"
+                        )
+
+            elif tipo_fuente_catalogo == "csv":
+                for campo in (
+                    "url_csv",
+                    "columna_periodo",
+                    "columna_valor",
+                ):
+                    if campo not in cfg_catalogo:
+                        errores_catalogo.append(
+                            f"{codigo_catalogo}: falta {campo}"
+                        )
+
+            elif tipo_fuente_catalogo == "csv_multidimensional":
+                for campo in (
+                    "url_csv",
+                    "columna_periodo",
+                    "columna_dimension",
+                    "columna_valor",
+                    "etiqueta_dimension",
+                    "parametro_dimension",
+                ):
+                    if campo not in cfg_catalogo:
+                        errores_catalogo.append(
+                            f"{codigo_catalogo}: falta {campo}"
+                        )
+
+            else:
+                errores_catalogo.append(
+                    f"{codigo_catalogo}: tipo_fuente no reconocido "
+                    f"({tipo_fuente_catalogo})"
+                )
+
+        if errores_catalogo:
+            st.error(
+                f"Se encontraron {len(errores_catalogo)} "
+                "problema(s) en el catálogo."
+            )
+            for error_catalogo in errores_catalogo:
+                st.write("•", error_catalogo)
+        else:
+            st.success(
+                "Catálogo cargado correctamente. "
+                "No se detectaron errores estructurales."
+            )
+
+        filas_catalogo = []
+        for codigo_catalogo, cfg_catalogo in SERIES_CATALOGO.items():
+            filas_catalogo.append({
+                "Código": codigo_catalogo,
+                "Serie": cfg_catalogo.get("nombre", ""),
+                "Frecuencia": FRECUENCIAS.get(
+                    cfg_catalogo.get("frecuencia"),
+                    cfg_catalogo.get("frecuencia", "")
+                ),
+                "Fuente": cfg_catalogo.get("fuente", ""),
+                "Tipo": cfg_catalogo.get("tipo_fuente", ""),
+            })
+
+        df_diagnostico_catalogo = pd.DataFrame(filas_catalogo)
+
+        st.dataframe(
+            df_diagnostico_catalogo,
+            use_container_width=True,
+            hide_index=True,
+        )
+
+        codigo_buscar = st.text_input(
+            "Comprobar código de serie",
+            placeholder="Ejemplo: PN39522PM",
+            key="diagnostico_codigo_catalogo",
+        ).strip()
+
+        if codigo_buscar:
+            if codigo_buscar in SERIES_CATALOGO:
+                cfg_encontrada = SERIES_CATALOGO[codigo_buscar]
+                st.success(
+                    f"{codigo_buscar} está cargada en el catálogo: "
+                    f"{cfg_encontrada.get('nombre', '')}"
+                )
+            else:
+                st.warning(
+                    f"{codigo_buscar} no está cargada en el catálogo "
+                    "que está usando esta app."
+                )
+
+
+# ============================================================
+# 6. SELECCIÓN
 # ============================================================
 
 st.markdown('<div class="ap-section">1. Selecciona las series</div>', unsafe_allow_html=True)

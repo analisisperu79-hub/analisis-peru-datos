@@ -401,6 +401,18 @@ SERIES = {
     "permitir_log": True,
     "permitir_ajuste_estacional": True,
 },
+    "PN38723BM": {
+    "nombre": "Balanza comercial",
+    "codigo": "PN38723BM",
+    "nombre_corto": "balanza_comercial",
+    "frecuencia": "M",
+    "unidad": "Millones de US$",
+    "fuente": "BCRP",
+    "api_inicio": "2012-01",
+    "api_fin": "2100-12",
+    "permitir_log": False,
+    "permitir_ajuste_estacional": True,
+},
 }
 
 DEFAULT_SERIE = "PM04946AA"

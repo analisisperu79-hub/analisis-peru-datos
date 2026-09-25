@@ -191,6 +191,21 @@ SERIES_CATALOGO = {
     "api_fin": "2100-12",
     "permitir_log": True,
 },
+    # --------------------------------------------------------
+    # Monetario y financiero — BCRP
+    # --------------------------------------------------------
+    "PD04722MM": {
+    "nombre": "Tasa de Referencia de la Política Monetaria",
+    "nombre_corto": "tasa_referencia_bcrp",
+    "categoria": "Monetario y financiero",
+    "frecuencia": "M",
+    "unidad": "Porcentaje",
+    "fuente": "BCRP",
+    "tipo_fuente": "bcrp",
+    "api_inicio": "2003-09",
+    "api_fin": "2100-12",
+    "permitir_log": False,
+},
 
 
     # --------------------------------------------------------

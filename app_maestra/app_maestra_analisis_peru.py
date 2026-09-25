@@ -260,6 +260,21 @@ SERIES = {
     "permitir_log": True,
     "permitir_ajuste_estacional": True,
 },
+    # --------------------------------------------------------
+    # Tasa de referencia
+    # -------------------------------------------------------- 
+    "PD04722MM": {
+    "nombre": "Tasa de Referencia de la Política Monetaria",
+    "codigo": "PD04722MM",
+    "nombre_corto": "tasa_referencia_bcrp",
+    "frecuencia": "M",
+    "unidad": "Porcentaje",
+    "fuente": "BCRP",
+    "api_inicio": "2003-09",
+    "api_fin": "2100-12",
+    "permitir_log": False,
+    "permitir_ajuste_estacional": False,
+},
 }
 
 DEFAULT_SERIE = "PM04946AA"

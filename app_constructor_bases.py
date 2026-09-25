@@ -438,26 +438,9 @@ def dataframe_a_stata(df):
 # 4. CABECERA
 # ============================================================
 
-st.title("Constructor de bases de datos")
-st.markdown(
-    '<div class="ap-subtitle">'
-    'Combina series económicas compatibles, iguala automáticamente el periodo '
-    'de análisis y descarga una base lista para trabajar.'
-    '</div>',
-    unsafe_allow_html=True,
-)
-
-st.markdown(
-    """
-    <div class="ap-note">
-      <strong>Regla principal:</strong> solo se combinan series con la misma
-      frecuencia. La aplicación utiliza automáticamente el periodo común:
-      comienza en la fecha más tardía de inicio y termina en la fecha más
-      temprana de cierre. No interpola ni inventa observaciones faltantes.
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+# La explicación general del Constructor ya está en la página de Blogger.
+# Se elimina aquí la cabecera redundante para aprovechar mejor la altura
+# del iframe.
 
 # ============================================================
 # 5. SELECCIÓN

@@ -32,9 +32,202 @@ import plotly.express as px
 import requests
 import streamlit as st
 
-from catalogo_series_constructor import SERIES_CATALOGO, FRECUENCIAS
+import ast
+import time
+
+# Catálogo local: se conserva únicamente como respaldo.
+try:
+    from catalogo_series_constructor import (
+        SERIES_CATALOGO as SERIES_CATALOGO_LOCAL,
+        FRECUENCIAS as FRECUENCIAS_LOCAL,
+    )
+except Exception:
+    SERIES_CATALOGO_LOCAL = {}
+    FRECUENCIAS_LOCAL = {
+        "M": "Mensual",
+        "Q": "Trimestral",
+        "A": "Anual",
+    }
 
 BCRP_API = "https://estadisticas.bcrp.gob.pe/estadisticas/series/api"
+
+
+# ============================================================
+# CATÁLOGO REMOTO AUTOMÁTICO
+# ============================================================
+# El Constructor ya no depende de reiniciar Streamlit para
+# reconocer nuevas series. En cada ejecución consulta la versión
+# más reciente de catalogo_series_constructor.py en GitHub.
+#
+# Si GitHub no estuviera disponible, usa el catálogo local como
+# respaldo para que la app continúe funcionando.
+# ============================================================
+
+GITHUB_OWNER = "analisisperu79-hub"
+GITHUB_REPO = "analisis-peru-datos"
+GITHUB_BRANCH = "main"
+CATALOGO_ARCHIVO = "catalogo_series_constructor.py"
+
+
+def _extraer_diccionarios_catalogo(texto_python):
+    """
+    Extrae únicamente SERIES_CATALOGO y FRECUENCIAS usando AST.
+    No ejecuta el código remoto.
+    """
+    arbol = ast.parse(texto_python)
+
+    encontrados = {}
+
+    for nodo in arbol.body:
+        if not isinstance(nodo, ast.Assign):
+            continue
+
+        for objetivo in nodo.targets:
+            if isinstance(objetivo, ast.Name) and objetivo.id in {
+                "SERIES_CATALOGO",
+                "FRECUENCIAS",
+            }:
+                encontrados[objetivo.id] = ast.literal_eval(nodo.value)
+
+    if "SERIES_CATALOGO" not in encontrados:
+        raise ValueError(
+            "No se encontró SERIES_CATALOGO en el archivo remoto."
+        )
+
+    if "FRECUENCIAS" not in encontrados:
+        encontrados["FRECUENCIAS"] = {
+            "M": "Mensual",
+            "Q": "Trimestral",
+            "A": "Anual",
+        }
+
+    return (
+        encontrados["SERIES_CATALOGO"],
+        encontrados["FRECUENCIAS"],
+    )
+
+
+@st.cache_data(ttl=300, show_spinner=False)
+def _descubrir_ruta_catalogo():
+    """
+    Busca el archivo dentro del repositorio.
+    Esta búsqueda se cachea 5 minutos porque la ruta normalmente
+    no cambia; el CONTENIDO del catálogo se descarga aparte.
+    """
+    candidatos = [
+        CATALOGO_ARCHIVO,
+        f"constructor/{CATALOGO_ARCHIVO}",
+        f"app_constructor/{CATALOGO_ARCHIVO}",
+        f"constructor_bases/{CATALOGO_ARCHIVO}",
+        f"app_constructor_bases/{CATALOGO_ARCHIVO}",
+    ]
+
+    for ruta in candidatos:
+        url = (
+            f"https://raw.githubusercontent.com/"
+            f"{GITHUB_OWNER}/{GITHUB_REPO}/"
+            f"{GITHUB_BRANCH}/{ruta}"
+        )
+
+        try:
+            r = requests.get(
+                url,
+                timeout=8,
+                headers={"Cache-Control": "no-cache"},
+            )
+            if r.ok and "SERIES_CATALOGO" in r.text:
+                return ruta
+        except requests.RequestException:
+            pass
+
+    # Respaldo: localiza el archivo recorriendo el árbol del repo.
+    api_tree = (
+        f"https://api.github.com/repos/"
+        f"{GITHUB_OWNER}/{GITHUB_REPO}/git/trees/"
+        f"{GITHUB_BRANCH}?recursive=1"
+    )
+
+    r = requests.get(
+        api_tree,
+        timeout=10,
+        headers={"Accept": "application/vnd.github+json"},
+    )
+    r.raise_for_status()
+
+    coincidencias = [
+        item.get("path", "")
+        for item in r.json().get("tree", [])
+        if item.get("type") == "blob"
+        and item.get("path", "").endswith(
+            "/" + CATALOGO_ARCHIVO
+        )
+    ]
+
+    # También acepta el archivo en la raíz.
+    if any(
+        item.get("type") == "blob"
+        and item.get("path") == CATALOGO_ARCHIVO
+        for item in r.json().get("tree", [])
+    ):
+        return CATALOGO_ARCHIVO
+
+    if coincidencias:
+        return coincidencias[0]
+
+    raise FileNotFoundError(
+        "No se encontró catalogo_series_constructor.py en GitHub."
+    )
+
+
+def cargar_catalogo_actual():
+    """
+    Descarga la versión más reciente del catálogo.
+    El parámetro de tiempo evita reutilizar una copia antigua del CDN.
+    """
+    try:
+        ruta = _descubrir_ruta_catalogo()
+
+        url = (
+            f"https://raw.githubusercontent.com/"
+            f"{GITHUB_OWNER}/{GITHUB_REPO}/"
+            f"{GITHUB_BRANCH}/{ruta}"
+            f"?v={time.time_ns()}"
+        )
+
+        r = requests.get(
+            url,
+            timeout=10,
+            headers={
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
+            },
+        )
+        r.raise_for_status()
+
+        series, frecuencias = _extraer_diccionarios_catalogo(
+            r.text
+        )
+
+        return series, frecuencias, "GitHub", ruta, None
+
+    except Exception as e:
+        return (
+            SERIES_CATALOGO_LOCAL,
+            FRECUENCIAS_LOCAL,
+            "respaldo local",
+            "catalogo_series_constructor.py",
+            str(e),
+        )
+
+
+(
+    SERIES_CATALOGO,
+    FRECUENCIAS,
+    CATALOGO_ORIGEN,
+    CATALOGO_RUTA,
+    CATALOGO_ERROR,
+) = cargar_catalogo_actual()
+
 
 st.set_page_config(
     page_title="Constructor de bases de datos | Análisis Perú",
@@ -491,6 +684,17 @@ admin_activo = str(st.query_params.get("admin", "0")).lower() in {
 
 if admin_activo:
     with st.expander("Diagnóstico del catálogo · Administración", expanded=True):
+
+        st.caption(
+            f"Catálogo activo: {CATALOGO_ORIGEN} · {CATALOGO_RUTA}"
+        )
+
+        if CATALOGO_ERROR:
+            st.warning(
+                "No fue posible leer el catálogo remoto en esta ejecución. "
+                "Se está usando el respaldo local. Detalle: "
+                + CATALOGO_ERROR
+            )
 
         total_series = len(SERIES_CATALOGO)
 

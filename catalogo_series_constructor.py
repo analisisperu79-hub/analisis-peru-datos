@@ -179,6 +179,18 @@ SERIES_CATALOGO = {
         "api_fin": "2100-12",
         "permitir_log": True,
     },
+    "PN39522PM": {
+    "nombre": "IPC no subyacente de Lima Metropolitana",
+    "nombre_corto": "ipc_no_subyacente",
+    "categoria": "Precios e inflación",
+    "frecuencia": "M",
+    "unidad": "Índice, diciembre de 2021 = 100",
+    "fuente": "INEI / BCRP",
+    "tipo_fuente": "bcrp",
+    "api_inicio": "1990-12",
+    "api_fin": "2100-12",
+    "permitir_log": True,
+},
 
 
     # --------------------------------------------------------

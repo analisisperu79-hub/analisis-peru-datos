@@ -1,6 +1,6 @@
 {
   "actualizado": "2026-09-26",
-  "total": 7,
+  "total": 12,
   "noticias": [
     {
       "id": "20260922-gobierno-fortalece-la-confianza-en-la-economia-peruana-ante-calificadoras-de-rie",
@@ -36,6 +36,17 @@
       "url_base": ""
     },
     {
+      "id": "20260915-produccion-nacional-crecio-356-en-julio-de-2026",
+      "fecha": "15/09/2026",
+      "fecha_iso": "2026-09-15",
+      "fuente": "INEI",
+      "categoria": "Actividad económica",
+      "titulo": "Producción nacional creció 3,56% en julio de 2026",
+      "resumen": "INEI publicó una actualización oficial relacionada con: Producción nacional creció 3,56% en julio de 2026. Consulta la fuente oficial para revisar el detalle completo.",
+      "url_fuente": "https://www.gob.pe/institucion/inei/noticias/1444369-produccion-nacional-crecio-3-56-en-julio-de-2026",
+      "url_base": "https://analisisperudatos.blogspot.com/p/bases-de-datos_01581930746.html"
+    },
+    {
       "id": "20260911-sunat-proyecta-recaudar-mas-de-214-mil-millones-de-soles-en-el-ano-2027",
       "fecha": "11/09/2026",
       "fecha_iso": "2026-09-11",
@@ -44,6 +55,28 @@
       "titulo": "SUNAT PROYECTA RECAUDAR MÁS DE 214 MIL MILLONES DE SOLES EN EL AÑO 2027",
       "resumen": "SUNAT publicó una actualización oficial relacionada con: SUNAT PROYECTA RECAUDAR MÁS DE 214 MIL MILLONES DE SOLES EN EL AÑO 2027. Consulta la fuente oficial para revisar el detalle completo.",
       "url_fuente": "https://www.sunat.gob.pe/salaprensa/2026/setiembre/NotaPrensaN0542026.doc",
+      "url_base": ""
+    },
+    {
+      "id": "20260911-inei-volumen-total-exportado-crecio-en-120-durante-julio-de-2026-impulsado-princ",
+      "fecha": "11/09/2026",
+      "fecha_iso": "2026-09-11",
+      "fuente": "INEI",
+      "categoria": "Economía peruana",
+      "titulo": "INEI: Volumen total exportado creció en 12,0% durante julio de 2026 impulsado principalmente por los mayores embarques mineros",
+      "resumen": "En julio de 2026, el volumen total exportado se incrementó en 12,0% respecto a similar mes de 2025. Este resultado se explicó por los mayores embarques de productos tradicionales (13,2%); en particular, el sector minero fue el que más incidió en este resultado, así lo dio a... #gobpe",
+      "url_fuente": "https://www.gob.pe/institucion/inei/noticias/1443305-inei-volumen-total-exportado-crecio-en-12-0-durante-julio-de-2026-impulsado-principalmente-por-los-mayores-embarques-mineros",
+      "url_base": ""
+    },
+    {
+      "id": "20260911-inei-ucayali-reduce-su-ritmo-de-crecimiento-poblacional-y-encamina-un-cambio-en-",
+      "fecha": "11/09/2026",
+      "fecha_iso": "2026-09-11",
+      "fuente": "INEI",
+      "categoria": "Actividad económica",
+      "titulo": "INEI: Ucayali reduce su ritmo de crecimiento poblacional y encamina un cambio en su estructura demográfica",
+      "resumen": "INEI publicó una actualización oficial relacionada con: INEI: Ucayali reduce su ritmo de crecimiento poblacional y encamina un cambio en su estructura demográfica. Consulta la fuente oficial para revisar el detalle completo.",
+      "url_fuente": "https://www.gob.pe/institucion/inei/noticias/1442239-inei-ucayali-reduce-su-ritmo-de-crecimiento-poblacional-y-encamina-un-cambio-en-su-estructura-demografica",
       "url_base": ""
     },
     {
@@ -66,6 +99,28 @@
       "titulo": "SUNAT: INGRESOS TRIBUTARIOS AUMENTARON 17,3% EN AGOSTO",
       "resumen": "SUNAT publicó una actualización oficial relacionada con: SUNAT: INGRESOS TRIBUTARIOS AUMENTARON 17,3% EN AGOSTO. Consulta la fuente oficial para revisar el detalle completo.",
       "url_fuente": "https://www.sunat.gob.pe/salaprensa/2026/setiembre/NotaPrensaN0532026.docx",
+      "url_base": ""
+    },
+    {
+      "id": "20260901-estadisticas-indice-tematico-economia-poblacion-y-vivienda-empleo-sociales-medio",
+      "fecha": "01/09/2026",
+      "fecha_iso": "2026-09-01",
+      "fuente": "INEI",
+      "categoria": "Mercado laboral",
+      "titulo": "ESTADÍSTICAS Índice Temático Economia Población y Vivienda Empleo Sociales Medio Ambiente Tecnologías de la Información y Comunicación Seguridad Ciudadana Indicadores de Género Metodologías Censos Códigos",
+      "resumen": "The inline option preserves bound JavaScript events and changes, and it puts the content back where it came from when it is closed.",
+      "url_fuente": "https://www.inei.gob.pe/biblioteca-virtual/boletines/avance-coyuntural/#url",
+      "url_base": ""
+    },
+    {
+      "id": "sin-fecha-institucional-sunat-rinde-cuentas-legislacion-estadisticas-y-estudios-indices-y-",
+      "fecha": "",
+      "fecha_iso": "",
+      "fuente": "SUNAT",
+      "categoria": "Economía peruana",
+      "titulo": "Institucional SUNAT Rinde Cuentas Legislación Estadísticas y Estudios Indices y Tasas Padrones y Notificaciones",
+      "resumen": "SUNAT - QUIENES SOMOS - INSTITUCIONAL - IAT - CULTURA TRIBUTARIA - MISIÓN Y VISIÓN - MISIÓN Y VISIÓN SUNAT - INTEGRIDAD - Superintendencia Nacional de Administración Tributaria - Administramos los tributos del Gobierno Nacional Peruano",
+      "url_fuente": "https://www.sunat.gob.pe/institucional/quienessomos/index.html",
       "url_base": ""
     },
     {

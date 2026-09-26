@@ -5,3 +5,4 @@ plotly
 requests
 statsmodels
 openpyxl
+beautifulsoup4

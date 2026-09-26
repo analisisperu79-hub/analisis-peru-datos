@@ -362,6 +362,18 @@ SERIES_CATALOGO = {
     "api_fin": "2100-12",
     "permitir_log": True,
 },
+    "PN03070FQ": {
+    "nombre": "Resultado económico del sector público no financiero",
+    "nombre_corto": "resultado_economico_spnf",
+    "categoria": "Sector fiscal",
+    "frecuencia": "Q",
+    "unidad": "Millones de soles",
+    "fuente": "BCRP",
+    "tipo_fuente": "bcrp",
+    "api_inicio": "1990-1",
+    "api_fin": "2100-4",
+    "permitir_log": False,
+},
 
     # --------------------------------------------------------
     # MULTIDIMENSIONALES — INEI

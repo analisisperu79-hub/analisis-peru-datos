@@ -6,6 +6,8 @@ from pathlib import Path
 from urllib.parse import urljoin
 from zoneinfo import ZoneInfo
 
+from bs4 import BeautifulSoup
+
 import requests
 
 ARCHIVO_SALIDA = Path("actualidad.json")

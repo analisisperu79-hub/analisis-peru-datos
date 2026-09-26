@@ -1,4 +1,14 @@
 {
   "actualizado": "2026-09-25",
-  "noticias": []
+  "noticias": [
+    {
+      "id": "prueba-actualidad",
+      "fecha": "25 septiembre 2026",
+      "fuente": "Análisis Perú",
+      "titulo": "Prueba de actualización automática de Actualidad",
+      "resumen": "Esta publicación de prueba confirma que la sección Actualidad de Análisis Perú puede cargar información directamente desde GitHub sin crear una nueva entrada en Blogger.",
+      "url_fuente": "https://analisisperudatos.blogspot.com/",
+      "url_base": "https://analisisperudatos.blogspot.com/p/bases-de-datos_01581930746.html"
+    }
+  ]
 }

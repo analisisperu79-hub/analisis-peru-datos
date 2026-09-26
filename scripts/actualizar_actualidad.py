@@ -2,6 +2,7 @@ import json
 import re
 import unicodedata
 from datetime import datetime, timedelta
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 from urllib.parse import urljoin, urlparse
 from zoneinfo import ZoneInfo
@@ -17,9 +18,8 @@ from bs4 import BeautifulSoup
 ARCHIVO_SALIDA = Path("actualidad.json")
 
 MAX_NOTICIAS = 12
-MAX_POR_FUENTE = 3
-MIN_POR_FUENTE = 1
-DIAS_MAXIMOS = 45
+MAX_POR_FUENTE = 4
+DIAS_MAXIMOS = 30
 
 TZ_PERU = ZoneInfo("America/Lima")
 TIMEOUT = 25
@@ -123,33 +123,14 @@ def descargar_html(url):
     return r.text
 
 
-PUBLICACIONES_PRIORITARIAS = [
-    "nota semanal",
-    "resumen informativo semanal",
-    "reporte de inflacion",
-    "programa monetario",
-    "nota de estudios",
-    "produccion nacional",
-    "avance coyuntural",
-    "panorama economico departamental",
-    "informe de precios",
-    "indicadores economicos",
-    "boletin",
-    "recaudacion",
-    "ingresos tributarios",
-]
-
 def parece_noticia(titulo):
     t = normalizar(titulo)
 
-    if len(t) < 10 or len(t) > 260:
+    if len(t) < 18 or len(t) > 240:
         return False
 
     if any(frase in t for frase in FRASES_PROHIBIDAS):
         return False
-
-    if any(p in t for p in PUBLICACIONES_PRIORITARIAS):
-        return True
 
     return any(p in t for p in PALABRAS_ECONOMICAS)
 
@@ -406,15 +387,99 @@ def fecha_cercana_enlace(enlace, anio_referencia=None):
 # BCRP
 # ============================================================
 
+
+def obtener_ultima_nota_semanal_bcrp():
+    """
+    Busca directamente el PDF más reciente de la Nota Semanal del BCRP.
+
+    No depende de que el título contenga palabras económicas ni de que
+    la página índice del BCRP sea fácilmente scrapeable.
+
+    Se prueban números cercanos a la semana actual porque la numeración
+    de la Nota Semanal suele avanzar aproximadamente una vez por semana.
+    """
+    ahora = ahora_peru()
+    anio = ahora.year
+    semana_iso = ahora.isocalendar().week
+
+    # Normalmente el número de edición va algo por debajo de la semana ISO.
+    # Probamos una ventana amplia y descendente.
+    inicio = min(53, semana_iso + 1)
+    fin = max(1, inicio - 18)
+
+    numeros = list(range(inicio, fin - 1, -1))
+
+    for numero in numeros:
+        url = (
+            f"https://www.bcrp.gob.pe/docs/Publicaciones/"
+            f"Nota-Semanal/{anio}/ns-{numero:02d}-{anio}.pdf"
+        )
+
+        try:
+            headers = dict(HEADERS)
+            headers["Range"] = "bytes=0-2047"
+
+            r = requests.get(
+                url,
+                headers=headers,
+                timeout=12,
+                stream=True,
+                allow_redirects=True,
+            )
+
+            if r.status_code not in (200, 206):
+                r.close()
+                continue
+
+            content_type = r.headers.get("Content-Type", "").lower()
+
+            # El BCRP normalmente responde application/pdf.
+            # Aceptamos además URLs que terminen en .pdf.
+            if "pdf" not in content_type and not url.lower().endswith(".pdf"):
+                r.close()
+                continue
+
+            fecha = None
+            last_modified = r.headers.get("Last-Modified")
+
+            if last_modified:
+                try:
+                    fecha_http = parsedate_to_datetime(last_modified)
+                    if fecha_http.tzinfo is None:
+                        fecha_http = fecha_http.replace(tzinfo=TZ_PERU)
+                    fecha = fecha_http.astimezone(TZ_PERU)
+                except Exception:
+                    fecha = None
+
+            r.close()
+
+            return {
+                "fuente": "BCRP",
+                "titulo": f"Nota Semanal N° {numero} - {anio}",
+                "url_fuente": url,
+                "fecha_indice": fecha,
+                "resumen_indice": (
+                    "Publicación semanal del Banco Central de Reserva del Perú "
+                    "con información reciente sobre variables monetarias, "
+                    "financieras, cambiarias, sector externo y otros indicadores "
+                    "de coyuntura económica."
+                ),
+                "es_nota_semanal_bcrp": True,
+            }
+
+        except Exception as e:
+            print(f"No se pudo comprobar Nota Semanal BCRP {numero}: {e}")
+
+    return None
+
+
+
 def obtener_bcrp():
     noticias = []
 
     urls = [
         "https://www.bcrp.gob.pe/transparencia/notas-informativas.html",
         "https://www.bcrp.gob.pe/publicaciones/notas-de-estudios.html",
-        "https://www.bcrp.gob.pe/publicaciones/nota-semanal.html",
-        "https://www.bcrp.gob.pe/publicaciones/reporte-de-inflacion.html",
-        "https://www.bcrp.gob.pe/",
     ]
 
     for url in urls:
@@ -443,8 +508,19 @@ def obtener_bcrp():
         except Exception as e:
             print("Error BCRP:", e)
 
-    return noticias
+    # Añadir explícitamente la última Nota Semanal del BCRP.
+    nota_semanal = obtener_ultima_nota_semanal_bcrp()
 
+    if nota_semanal:
+        noticias.append(nota_semanal)
+        print(
+            "Nota Semanal BCRP encontrada:",
+            nota_semanal["titulo"]
+        )
+    else:
+        print("No se encontró una Nota Semanal BCRP reciente.")
+
+    return noticias
 
 # ============================================================
 # INEI
@@ -452,61 +528,60 @@ def obtener_bcrp():
 
 def obtener_inei():
     noticias = []
+    url = "https://www.inei.gob.pe/prensa/noticias/"
 
-    urls = [
-        "https://www.gob.pe/institucion/inei/noticias",
-        "https://www.inei.gob.pe/prensa/noticias/",
-        "https://www.inei.gob.pe/biblioteca-virtual/boletines/produccion-nacional/",
-        "https://www.inei.gob.pe/biblioteca-virtual/boletines/avance-coyuntural/",
-        "https://www.inei.gob.pe/biblioteca-virtual/boletines/informe-de-precios/",
-        "https://www.inei.gob.pe/biblioteca-virtual/boletines/panorama-economico-departamental/",
-    ]
+    try:
+        soup = BeautifulSoup(descargar_html(url), "html.parser")
 
-    for url in urls:
-        try:
-            soup = BeautifulSoup(descargar_html(url), "html.parser")
+        for enlace in soup.find_all("a", href=True):
+            href = enlace["href"]
+            titulo = limpiar_texto(enlace.get_text(" ", strip=True))
 
-            for enlace in soup.find_all("a", href=True):
-                titulo = limpiar_texto(enlace.get_text(" ", strip=True))
-                href = enlace["href"]
+            if "/prensa/noticias/" not in normalizar(href):
+                continue
 
-                if not parece_noticia(titulo):
-                    continue
+            if not parece_noticia(titulo):
+                continue
 
-                final = urljoin(url, href)
-                fecha_indice = fecha_cercana_enlace(enlace)
-                resumen_indice = ""
+            final = urljoin("https://www.inei.gob.pe", href).rstrip("/")
 
-                padre = enlace.parent
-                for _ in range(4):
-                    if padre is None:
-                        break
+            if final in {
+                "https://www.inei.gob.pe",
+                "https://www.inei.gob.pe/prensa",
+                "https://www.inei.gob.pe/prensa/noticias",
+            }:
+                continue
 
-                    textos = [
-                        limpiar_texto(p.get_text(" ", strip=True))
-                        for p in padre.find_all("p")
-                    ]
+            fecha_indice = fecha_cercana_enlace(enlace)
 
-                    resumen_indice = next(
-                        (t for t in textos if descripcion_valida(t)),
-                        ""
-                    )
+            resumen_indice = ""
+            padre = enlace.parent
 
-                    if resumen_indice:
-                        break
+            for _ in range(3):
+                if padre is None:
+                    break
+                textos = [
+                    limpiar_texto(p.get_text(" ", strip=True))
+                    for p in padre.find_all("p")
+                ]
+                resumen_indice = next(
+                    (t for t in textos if descripcion_valida(t)),
+                    ""
+                )
+                if resumen_indice:
+                    break
+                padre = padre.parent
 
-                    padre = padre.parent
+            noticias.append({
+                "fuente": "INEI",
+                "titulo": titulo,
+                "url_fuente": final,
+                "fecha_indice": fecha_indice,
+                "resumen_indice": resumen_indice,
+            })
 
-                noticias.append({
-                    "fuente": "INEI",
-                    "titulo": titulo,
-                    "url_fuente": final,
-                    "fecha_indice": fecha_indice,
-                    "resumen_indice": resumen_indice,
-                })
-
-        except Exception as e:
-            print(f"Error INEI en {url}:", e)
+    except Exception as e:
+        print("Error INEI:", e)
 
     return noticias
 
@@ -597,12 +672,6 @@ def obtener_sunat():
 def clasificar(titulo):
     t = normalizar(titulo)
 
-    if any(x in t for x in [
-        "nota semanal", "resumen informativo semanal",
-        "avance coyuntural", "indicadores economicos"
-    ]):
-        return "Coyuntura económica"
-
     if any(x in t for x in ["inflacion", "ipc", "precios"]):
         return "Precios e inflación"
 
@@ -658,23 +727,6 @@ def obtener_base_relacionada(titulo):
 def puntuar(titulo, fecha):
     puntos = 0
     t = normalizar(titulo)
-
-    prioridades = {
-        "nota semanal": 12,
-        "resumen informativo semanal": 11,
-        "reporte de inflacion": 10,
-        "programa monetario": 9,
-        "produccion nacional": 10,
-        "avance coyuntural": 9,
-        "panorama economico departamental": 8,
-        "informe de precios": 9,
-        "recaudacion": 9,
-        "ingresos tributarios": 9,
-    }
-
-    for palabra, extra in prioridades.items():
-        if palabra in t:
-            puntos += extra
 
     for palabra in [
         "pbi", "inflacion", "tasa de referencia", "produccion nacional",
@@ -749,7 +801,14 @@ def preparar_noticias(candidatas):
         else:
             fecha_texto = ""
             fecha_iso = ""
-            fecha_orden = datetime(1900, 1, 1, tzinfo=TZ_PERU)
+
+            if noticia.get("es_nota_semanal_bcrp"):
+                # No mostramos una fecha inventada.
+                # Solo usamos la fecha actual para que la última Nota Semanal
+                # no quede relegada al final por carecer de Last-Modified.
+                fecha_orden = ahora_peru()
+            else:
+                fecha_orden = datetime(1900, 1, 1, tzinfo=TZ_PERU)
 
         resultado.append({
             "id": (
@@ -774,36 +833,11 @@ def preparar_noticias(candidatas):
         reverse=True
     )
 
-    # Equilibrio entre instituciones:
-    # primero reserva una publicación por cada fuente disponible;
-    # después completa por fecha y relevancia.
+    # Evita que una sola institución ocupe casi toda la página.
     seleccion = []
     conteo_fuente = {}
-    ids_seleccionados = set()
-
-    fuentes_objetivo = ["BCRP", "INEI", "MEF", "SUNAT"]
-
-    for fuente_objetivo in fuentes_objetivo:
-        candidatos_fuente = [
-            item for item in resultado
-            if item["fuente"] == fuente_objetivo
-        ]
-
-        if not candidatos_fuente:
-            continue
-
-        mejor = candidatos_fuente[0]
-        seleccion.append(mejor)
-        ids_seleccionados.add(mejor["id"])
-        conteo_fuente[fuente_objetivo] = 1
 
     for item in resultado:
-        if len(seleccion) >= MAX_NOTICIAS:
-            break
-
-        if item["id"] in ids_seleccionados:
-            continue
-
         fuente = item["fuente"]
         usados = conteo_fuente.get(fuente, 0)
 
@@ -811,13 +845,10 @@ def preparar_noticias(candidatas):
             continue
 
         seleccion.append(item)
-        ids_seleccionados.add(item["id"])
         conteo_fuente[fuente] = usados + 1
 
-    seleccion.sort(
-        key=lambda n: (n["_fecha"], n["_score"]),
-        reverse=True
-    )
+        if len(seleccion) >= MAX_NOTICIAS:
+            break
 
     for item in seleccion:
         item.pop("_fecha", None)
@@ -840,13 +871,6 @@ def main():
     candidatas.extend(obtener_sunat())
 
     print(f"Publicaciones candidatas: {len(candidatas)}")
-
-    candidatas_por_fuente = {}
-    for c in candidatas:
-        f = c.get("fuente", "DESCONOCIDA")
-        candidatas_por_fuente[f] = candidatas_por_fuente.get(f, 0) + 1
-
-    print("Candidatas encontradas por fuente:", candidatas_por_fuente)
 
     noticias = preparar_noticias(candidatas)
 

@@ -17,10 +17,9 @@ from bs4 import BeautifulSoup
 ARCHIVO_SALIDA = Path("actualidad.json")
 
 MAX_NOTICIAS = 12
-MAX_POR_FUENTE = 4
+MAX_POR_FUENTE = 3
 MIN_POR_FUENTE = 1
-FUENTES_OBJETIVO = ("BCRP", "INEI", "MEF", "SUNAT")
-DIAS_MAXIMOS = 30
+DIAS_MAXIMOS = 45
 
 TZ_PERU = ZoneInfo("America/Lima")
 TIMEOUT = 25
@@ -124,24 +123,32 @@ def descargar_html(url):
     return r.text
 
 
+PUBLICACIONES_PRIORITARIAS = [
+    "nota semanal",
+    "resumen informativo semanal",
+    "reporte de inflacion",
+    "programa monetario",
+    "nota de estudios",
+    "produccion nacional",
+    "avance coyuntural",
+    "panorama economico departamental",
+    "informe de precios",
+    "indicadores economicos",
+    "boletin",
+    "recaudacion",
+    "ingresos tributarios",
+]
+
 def parece_noticia(titulo):
     t = normalizar(titulo)
 
-    if len(t) < 12 or len(t) > 240:
+    if len(t) < 10 or len(t) > 260:
         return False
 
     if any(frase in t for frase in FRASES_PROHIBIDAS):
         return False
 
-    # Publicaciones institucionales que son relevantes aunque el título
-    # no contenga palabras económicas específicas. Esto es crucial para BCRP.
-    publicaciones_prioritarias = [
-        "nota semanal",
-        "resumen informativo semanal",
-        "reporte de inflacion",
-        "nota de estudios",
-    ]
-    if any(p in t for p in publicaciones_prioritarias):
+    if any(p in t for p in PUBLICACIONES_PRIORITARIAS):
         return True
 
     return any(p in t for p in PALABRAS_ECONOMICAS)
@@ -180,22 +187,6 @@ def crear_resumen_corto(texto, max_chars=300):
 
 def resumen_fallback(titulo, fuente):
     titulo = limpiar_texto(titulo)
-    t = normalizar(titulo)
-
-    if fuente == "BCRP" and "nota semanal" in t:
-        return (
-            "Publicación semanal del Banco Central de Reserva del Perú que reúne "
-            "el resumen informativo y cuadros estadísticos recientes sobre la "
-            "economía peruana, el sector monetario, financiero, fiscal y externo."
-        )
-
-    if fuente == "BCRP" and "resumen informativo semanal" in t:
-        return (
-            "Resumen semanal del Banco Central de Reserva del Perú con los "
-            "principales indicadores y acontecimientos monetarios, financieros y "
-            "macroeconómicos recientes."
-        )
-
     return (
         f"{fuente} publicó una actualización oficial relacionada con: "
         f"{titulo}. Consulta la fuente oficial para revisar el detalle completo."
@@ -415,77 +406,40 @@ def fecha_cercana_enlace(enlace, anio_referencia=None):
 # BCRP
 # ============================================================
 
-def _titulo_desde_contexto(enlace, max_niveles=3):
-    """Obtiene un título económico incluso cuando el texto visible del <a> es genérico."""
-    candidatos = [limpiar_texto(enlace.get_text(" ", strip=True))]
-    padre = enlace.parent
-    for _ in range(max_niveles):
-        if padre is None:
-            break
-        candidatos.append(limpiar_texto(padre.get_text(" ", strip=True)))
-        padre = padre.parent
-
-    for texto in candidatos:
-        if parece_noticia(texto):
-            # Quita prefijos frecuentes de fecha / número de nota.
-            texto = re.sub(r"^\s*\d{1,2}\s+(?:Ene|Feb|Mar|Abr|May|Jun|Jul|Ago|Set|Sep|Oct|Nov|Dic)\s*\|?\s*", "", texto, flags=re.I)
-            texto = re.sub(r"^Nota de Prensa\s*N[°º]?\s*\d{1,3}-\d{4}\s*", "", texto, flags=re.I)
-            return limpiar_texto(texto)[:240]
-    return ""
-
-
-def _extraer_enlaces_bcrp(url, visitadas=None):
-    """Lee una página BCRP y, si usa iframe, inspecciona también su contenido."""
-    visitadas = visitadas or set()
-    if url in visitadas:
-        return []
-    visitadas.add(url)
-
-    resultados = []
-    soup = BeautifulSoup(descargar_html(url), "html.parser")
-
-    for enlace in soup.find_all("a", href=True):
-        titulo = _titulo_desde_contexto(enlace)
-        if not titulo:
-            continue
-        final = urljoin(url, enlace["href"])
-        resultados.append((enlace, titulo, final))
-
-    # Algunas páginas del BCRP incrustan el listado real en un iframe.
-    for frame in soup.find_all("iframe", src=True):
-        frame_url = urljoin(url, frame["src"])
-        if "bcrp" not in urlparse(frame_url).netloc.lower():
-            continue
-        try:
-            resultados.extend(_extraer_enlaces_bcrp(frame_url, visitadas))
-        except Exception as e:
-            print(f"No se pudo leer iframe BCRP {frame_url}: {e}")
-
-    return resultados
-
-
 def obtener_bcrp():
     noticias = []
+
     urls = [
-        # La portada y la página de Nota Semanal suelen incluir el bloque de
-        # Novedades con Nota Semanal y Resumen Informativo Semanal. Si el portal
-        # bloquea temporalmente alguna URL, las otras quedan como respaldo.
-        "https://www.bcrp.gob.pe/",
-        "https://www.bcrp.gob.pe/publicaciones/nota-semanal.html",
         "https://www.bcrp.gob.pe/transparencia/notas-informativas.html",
         "https://www.bcrp.gob.pe/publicaciones/notas-de-estudios.html",
+        "https://www.bcrp.gob.pe/publicaciones/nota-semanal.html",
+        "https://www.bcrp.gob.pe/publicaciones/reporte-de-inflacion.html",
+        "https://www.bcrp.gob.pe/",
     ]
 
     for url in urls:
         try:
-            for enlace, titulo, final in _extraer_enlaces_bcrp(url):
+            soup = BeautifulSoup(descargar_html(url), "html.parser")
+
+            for enlace in soup.find_all("a", href=True):
+                titulo = limpiar_texto(enlace.get_text(" ", strip=True))
+                href = enlace["href"]
+
+                if not parece_noticia(titulo):
+                    continue
+
+                final = urljoin("https://www.bcrp.gob.pe", href)
+
+                fecha_indice = fecha_cercana_enlace(enlace)
+
                 noticias.append({
                     "fuente": "BCRP",
                     "titulo": titulo,
                     "url_fuente": final,
-                    "fecha_indice": fecha_cercana_enlace(enlace),
+                    "fecha_indice": fecha_indice,
                     "resumen_indice": "",
                 })
+
         except Exception as e:
             print("Error BCRP:", e)
 
@@ -499,13 +453,13 @@ def obtener_bcrp():
 def obtener_inei():
     noticias = []
 
-    # Fuente principal actual: portal gob.pe del INEI.
     urls = [
         "https://www.gob.pe/institucion/inei/noticias",
-        # Fallbacks oficiales con publicaciones económicas fechadas.
+        "https://www.inei.gob.pe/prensa/noticias/",
+        "https://www.inei.gob.pe/biblioteca-virtual/boletines/produccion-nacional/",
         "https://www.inei.gob.pe/biblioteca-virtual/boletines/avance-coyuntural/",
         "https://www.inei.gob.pe/biblioteca-virtual/boletines/informe-de-precios/",
-        "https://www.inei.gob.pe/biblioteca-virtual/boletines/prueba/1/",
+        "https://www.inei.gob.pe/biblioteca-virtual/boletines/panorama-economico-departamental/",
     ]
 
     for url in urls:
@@ -513,34 +467,34 @@ def obtener_inei():
             soup = BeautifulSoup(descargar_html(url), "html.parser")
 
             for enlace in soup.find_all("a", href=True):
+                titulo = limpiar_texto(enlace.get_text(" ", strip=True))
                 href = enlace["href"]
-                titulo = _titulo_desde_contexto(enlace)
-                if not titulo:
+
+                if not parece_noticia(titulo):
                     continue
 
-                final = urljoin(url, href).rstrip("/")
-
-                # En gob.pe aceptamos solo páginas de noticias del INEI.
-                if "gob.pe/institucion/inei/noticias" in url:
-                    if "/institucion/inei/noticias/" not in final:
-                        continue
-
+                final = urljoin(url, href)
                 fecha_indice = fecha_cercana_enlace(enlace)
                 resumen_indice = ""
-                padre = enlace.parent
 
-                for _ in range(3):
+                padre = enlace.parent
+                for _ in range(4):
                     if padre is None:
                         break
+
                     textos = [
                         limpiar_texto(p.get_text(" ", strip=True))
                         for p in padre.find_all("p")
                     ]
+
                     resumen_indice = next(
-                        (t for t in textos if descripcion_valida(t)), ""
+                        (t for t in textos if descripcion_valida(t)),
+                        ""
                     )
+
                     if resumen_indice:
                         break
+
                     padre = padre.parent
 
                 noticias.append({
@@ -552,7 +506,7 @@ def obtener_inei():
                 })
 
         except Exception as e:
-            print(f"Error INEI ({url}):", e)
+            print(f"Error INEI en {url}:", e)
 
     return noticias
 
@@ -570,14 +524,16 @@ def obtener_mef():
 
         for enlace in soup.find_all("a", href=True):
             href = enlace["href"]
+
+            if "/institucion/mef/noticias/" not in href:
+                continue
+
+            titulo = limpiar_texto(enlace.get_text(" ", strip=True))
+
+            if not parece_noticia(titulo):
+                continue
+
             final = urljoin("https://www.gob.pe", href)
-
-            if "/institucion/mef/noticias/" not in final:
-                continue
-
-            titulo = _titulo_desde_contexto(enlace)
-            if not titulo:
-                continue
 
             noticias.append({
                 "fuente": "MEF",
@@ -606,15 +562,18 @@ def obtener_sunat():
         soup = BeautifulSoup(descargar_html(url), "html.parser")
 
         for enlace in soup.find_all("a", href=True):
-            # En SUNAT muchas veces el <a> dice solo "Nota de Prensa N°...";
-            # el titular económico está en la misma fila/contenedor.
-            titulo = _titulo_desde_contexto(enlace, max_niveles=4)
-            if not titulo:
+            titulo = limpiar_texto(enlace.get_text(" ", strip=True))
+
+            if not parece_noticia(titulo):
                 continue
 
             final = urljoin(url, enlace["href"])
+
+            # SUNAT publica varias notas como documentos. No se descartan aquí:
+            # se conserva título y fecha del índice aunque el destino no sea HTML.
             fecha_indice = fecha_cercana_enlace(
-                enlace, anio_referencia=anio_actual
+                enlace,
+                anio_referencia=anio_actual
             )
 
             noticias.append({
@@ -638,7 +597,10 @@ def obtener_sunat():
 def clasificar(titulo):
     t = normalizar(titulo)
 
-    if "nota semanal" in t or "resumen informativo semanal" in t:
+    if any(x in t for x in [
+        "nota semanal", "resumen informativo semanal",
+        "avance coyuntural", "indicadores economicos"
+    ]):
         return "Coyuntura económica"
 
     if any(x in t for x in ["inflacion", "ipc", "precios"]):
@@ -697,17 +659,22 @@ def puntuar(titulo, fecha):
     puntos = 0
     t = normalizar(titulo)
 
-    # La Nota Semanal es una publicación de coyuntura central del BCRP.
-    # Se prioriza para que, cuando exista una edición reciente, represente al
-    # BCRP en la selección mínima por fuente.
-    if "nota semanal" in t:
-        puntos += 25
-    elif "resumen informativo semanal" in t:
-        puntos += 20
-    elif "reporte de inflacion" in t:
-        puntos += 15
-    elif "nota de estudios" in t:
-        puntos += 8
+    prioridades = {
+        "nota semanal": 12,
+        "resumen informativo semanal": 11,
+        "reporte de inflacion": 10,
+        "programa monetario": 9,
+        "produccion nacional": 10,
+        "avance coyuntural": 9,
+        "panorama economico departamental": 8,
+        "informe de precios": 9,
+        "recaudacion": 9,
+        "ingresos tributarios": 9,
+    }
+
+    for palabra, extra in prioridades.items():
+        if palabra in t:
+            puntos += extra
 
     for palabra in [
         "pbi", "inflacion", "tasa de referencia", "produccion nacional",
@@ -765,7 +732,7 @@ def preparar_noticias(candidatas):
 
         # Para BCRP/SUNAT permitimos conservar notas aunque el detalle sea PDF
         # o la página no entregue un resumen usable.
-        if not resumen and noticia["fuente"] in FUENTES_OBJETIVO:
+        if not resumen and noticia["fuente"] in ("BCRP", "SUNAT"):
             resumen = resumen_fallback(titulo, noticia["fuente"])
 
         if not resumen:
@@ -807,31 +774,39 @@ def preparar_noticias(candidatas):
         reverse=True
     )
 
-    # 1) Reserva primero al menos una noticia por institución, si existe.
+    # Equilibrio entre instituciones:
+    # primero reserva una publicación por cada fuente disponible;
+    # después completa por fecha y relevancia.
     seleccion = []
     conteo_fuente = {}
     ids_seleccionados = set()
 
-    for fuente_objetivo in FUENTES_OBJETIVO:
-        candidatos_fuente = [
-            n for n in resultado if n["fuente"] == fuente_objetivo
-        ]
-        for item in candidatos_fuente[:MIN_POR_FUENTE]:
-            seleccion.append(item)
-            ids_seleccionados.add(item["id"])
-            conteo_fuente[fuente_objetivo] = (
-                conteo_fuente.get(fuente_objetivo, 0) + 1
-            )
+    fuentes_objetivo = ["BCRP", "INEI", "MEF", "SUNAT"]
 
-    # 2) Completa los espacios por fecha/relevancia, manteniendo el máximo.
+    for fuente_objetivo in fuentes_objetivo:
+        candidatos_fuente = [
+            item for item in resultado
+            if item["fuente"] == fuente_objetivo
+        ]
+
+        if not candidatos_fuente:
+            continue
+
+        mejor = candidatos_fuente[0]
+        seleccion.append(mejor)
+        ids_seleccionados.add(mejor["id"])
+        conteo_fuente[fuente_objetivo] = 1
+
     for item in resultado:
         if len(seleccion) >= MAX_NOTICIAS:
             break
+
         if item["id"] in ids_seleccionados:
             continue
 
         fuente = item["fuente"]
         usados = conteo_fuente.get(fuente, 0)
+
         if usados >= MAX_POR_FUENTE:
             continue
 
@@ -839,7 +814,6 @@ def preparar_noticias(candidatas):
         ids_seleccionados.add(item["id"])
         conteo_fuente[fuente] = usados + 1
 
-    # Vuelve a ordenar la salida final cronológicamente.
     seleccion.sort(
         key=lambda n: (n["_fecha"], n["_score"]),
         reverse=True
@@ -860,19 +834,19 @@ def main():
     print("Buscando novedades económicas oficiales...")
 
     candidatas = []
-    por_fuente_crudo = {}
-    for fuente, funcion in [
-        ("BCRP", obtener_bcrp),
-        ("INEI", obtener_inei),
-        ("MEF", obtener_mef),
-        ("SUNAT", obtener_sunat),
-    ]:
-        items = funcion()
-        candidatas.extend(items)
-        por_fuente_crudo[fuente] = len(items)
+    candidatas.extend(obtener_bcrp())
+    candidatas.extend(obtener_inei())
+    candidatas.extend(obtener_mef())
+    candidatas.extend(obtener_sunat())
 
     print(f"Publicaciones candidatas: {len(candidatas)}")
-    print("Candidatas encontradas por fuente:", por_fuente_crudo)
+
+    candidatas_por_fuente = {}
+    for c in candidatas:
+        f = c.get("fuente", "DESCONOCIDA")
+        candidatas_por_fuente[f] = candidatas_por_fuente.get(f, 0) + 1
+
+    print("Candidatas encontradas por fuente:", candidatas_por_fuente)
 
     noticias = preparar_noticias(candidatas)
 

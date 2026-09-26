@@ -437,6 +437,18 @@ SERIES = {
     "permitir_log": True,
     "permitir_ajuste_estacional": False,
 },
+    "PN03070FQ": {
+    "nombre": "Resultado económico del sector público no financiero",
+    "codigo": "PN03070FQ",
+    "nombre_corto": "resultado_economico_spnf",
+    "frecuencia": "Q",
+    "unidad": "Millones de soles",
+    "fuente": "BCRP",
+    "api_inicio": "1990-1",
+    "api_fin": "2100-4",
+    "permitir_log": False,
+    "permitir_ajuste_estacional": False,
+},
 }
 
 DEFAULT_SERIE = "PM04946AA"

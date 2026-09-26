@@ -425,17 +425,17 @@ SERIES = {
     "permitir_log": True,
     "permitir_ajuste_estacional": False,
 },
-    "PN39276BQ": {
-    "nombre": "Cuenta financiera del sector privado - Activos",
-    "codigo": "PN39276BQ",
-    "nombre_corto": "cuenta_financiera_privada_activos",
-    "frecuencia": "Q",
+    "PN00002MM": {
+    "nombre": "Activos externos netos de corto plazo",
+    "codigo": "PN00002MM",
+    "nombre_corto": "activos_externos_netos_corto_plazo",
+    "frecuencia": "M",
     "unidad": "Millones de US$",
     "fuente": "BCRP",
-    "api_inicio": "2012-Q1",
-    "api_fin": "2100-Q4",
-    "permitir_log": False,
-    "permitir_ajuste_estacional": True,
+    "api_inicio": "1992-01",
+    "api_fin": "2100-12",
+    "permitir_log": True,
+    "permitir_ajuste_estacional": False,
 },
 }
 

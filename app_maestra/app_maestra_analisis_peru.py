@@ -3,7 +3,7 @@
 # ============================================================
 # Reutilizable para series MENSUALES, TRIMESTRALES y ANUALES.
 # Una sola app sirve múltiples series mediante ?serie=CODIGO.
-#
+# 
 # Flujo estándar:
 # 1) Descargar serie BCRP
 # 2) Seleccionar muestra

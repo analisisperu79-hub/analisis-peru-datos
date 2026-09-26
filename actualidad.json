@@ -1,7 +1,18 @@
 {
   "actualizado": "2026-09-26",
-  "total": 7,
+  "total": 8,
   "noticias": [
+    {
+      "id": "sin-fecha-nota-semanal-n-40-2026",
+      "fecha": "",
+      "fecha_iso": "",
+      "fuente": "BCRP",
+      "categoria": "Economía peruana",
+      "titulo": "Nota Semanal N° 40 - 2026",
+      "resumen": "Publicación semanal del Banco Central de Reserva del Perú con información reciente sobre variables monetarias, financieras, cambiarias, sector externo y otros indicadores de coyuntura económica.",
+      "url_fuente": "https://www.bcrp.gob.pe/docs/Publicaciones/Nota-Semanal/2026/ns-40-2026.pdf",
+      "url_base": ""
+    },
     {
       "id": "20260922-gobierno-fortalece-la-confianza-en-la-economia-peruana-ante-calificadoras-de-rie",
       "fecha": "22/09/2026",
@@ -36,17 +47,6 @@
       "url_base": ""
     },
     {
-      "id": "20260911-inei-volumen-total-exportado-crecio-en-120-durante-julio-de-2026-impulsado-princ",
-      "fecha": "11/09/2026",
-      "fecha_iso": "2026-09-11",
-      "fuente": "INEI",
-      "categoria": "Economía peruana",
-      "titulo": "INEI: Volumen total exportado creció en 12,0% durante julio de 2026 impulsado principalmente por los mayores embarques mineros",
-      "resumen": "En julio de 2026, el volumen total exportado se incrementó en 12,0% respecto a similar mes de 2025. Este resultado se explicó por los mayores embarques de productos tradicionales (13,2%); en particular, el sector minero fue el que más incidió en este resultado, así lo dio a... #gobpe",
-      "url_fuente": "https://www.gob.pe/institucion/inei/noticias/1443305-inei-volumen-total-exportado-crecio-en-12-0-durante-julio-de-2026-impulsado-principalmente-por-los-mayores-embarques-mineros",
-      "url_base": ""
-    },
-    {
       "id": "20260911-sunat-proyecta-recaudar-mas-de-214-mil-millones-de-soles-en-el-ano-2027",
       "fecha": "11/09/2026",
       "fecha_iso": "2026-09-11",
@@ -55,6 +55,17 @@
       "titulo": "SUNAT PROYECTA RECAUDAR MÁS DE 214 MIL MILLONES DE SOLES EN EL AÑO 2027",
       "resumen": "SUNAT publicó una actualización oficial relacionada con: SUNAT PROYECTA RECAUDAR MÁS DE 214 MIL MILLONES DE SOLES EN EL AÑO 2027. Consulta la fuente oficial para revisar el detalle completo.",
       "url_fuente": "https://www.sunat.gob.pe/salaprensa/2026/setiembre/NotaPrensaN0542026.doc",
+      "url_base": ""
+    },
+    {
+      "id": "20260908-mef-gobierno-impulsa-crecimiento-con-inversion-productividad-y-una-gestion-publi",
+      "fecha": "08/09/2026",
+      "fecha_iso": "2026-09-08",
+      "fuente": "MEF",
+      "categoria": "Actividad económica",
+      "titulo": "MEF: Gobierno impulsa crecimiento con inversión, productividad y una gestión pública orientada a resultados",
+      "resumen": "Ministro Elmer Cuba señaló que la economía peruana está creciendo pese al Fenómeno El Niño y que el Gobierno busca sostener y acelerar este dinamismo.El ministro de Economía y Finanzas, Elmer Cuba, señaló que el Gobierno busca aprovechar el dinamismo que viene mostrando la... #gobpe",
+      "url_fuente": "https://www.gob.pe/institucion/mef/noticias/1441380-mef-gobierno-impulsa-crecimiento-con-inversion-productividad-y-una-gestion-publica-orientada-a-resultados",
       "url_base": ""
     },
     {

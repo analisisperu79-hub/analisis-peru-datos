@@ -7,7 +7,6 @@ from urllib.parse import urljoin
 from zoneinfo import ZoneInfo
 
 import requests
-from bs4 import BeautifulSoup
 
 ARCHIVO_SALIDA = Path("actualidad.json")
 MAX_NOTICIAS = 8

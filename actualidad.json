@@ -1,6 +1,6 @@
 {
   "actualizado": "2026-09-26",
-  "total": 8,
+  "total": 7,
   "noticias": [
     {
       "id": "sin-fecha-nota-semanal-n-40-2026",
@@ -77,17 +77,6 @@
       "titulo": "SUNAT: INGRESOS TRIBUTARIOS AUMENTARON 17,3% EN AGOSTO",
       "resumen": "SUNAT publicó una actualización oficial relacionada con: SUNAT: INGRESOS TRIBUTARIOS AUMENTARON 17,3% EN AGOSTO. Consulta la fuente oficial para revisar el detalle completo.",
       "url_fuente": "https://www.sunat.gob.pe/salaprensa/2026/setiembre/NotaPrensaN0532026.docx",
-      "url_base": ""
-    },
-    {
-      "id": "sin-fecha-sunat-rinde-cuentas",
-      "fecha": "",
-      "fecha_iso": "",
-      "fuente": "SUNAT",
-      "categoria": "Economía peruana",
-      "titulo": "SUNAT Rinde Cuentas",
-      "resumen": "RENDICIÓN DE CUENTAS es una nueva sección de nuestra página web en la cual usted encontrará toda la información sobre el manejo institucional y presupuestal de la SUNAT .",
-      "url_fuente": "https://www.sunat.gob.pe/cuentassunat/index.html",
       "url_base": ""
     }
   ]

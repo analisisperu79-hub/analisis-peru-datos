@@ -17,6 +17,7 @@ from bs4 import BeautifulSoup
 ARCHIVO_SALIDA = Path("actualidad.json")
 
 MAX_NOTICIAS = 12
+MAX_POR_FUENTE = 4
 DIAS_MAXIMOS = 30
 
 TZ_PERU = ZoneInfo("America/Lima")
@@ -24,7 +25,7 @@ TIMEOUT = 25
 
 HEADERS = {
     "User-Agent": (
-        "Mozilla/5.0 (compatible; AnalisisPeruBot/3.0; "
+        "Mozilla/5.0 (compatible; AnalisisPeruBot/4.0; "
         "+https://analisisperudatos.blogspot.com/)"
     )
 }
@@ -35,15 +36,8 @@ BASES_URL = (
 )
 
 EXTENSIONES_BINARIAS = (
-    ".pdf",
-    ".doc",
-    ".docx",
-    ".xls",
-    ".xlsx",
-    ".zip",
-    ".rar",
-    ".ppt",
-    ".pptx",
+    ".pdf", ".doc", ".docx", ".xls", ".xlsx",
+    ".zip", ".rar", ".ppt", ".pptx"
 )
 
 
@@ -52,84 +46,35 @@ EXTENSIONES_BINARIAS = (
 # ============================================================
 
 PALABRAS_ECONOMICAS = [
-    "inflacion",
-    "ipc",
-    "precio",
-    "precios",
-    "pbi",
-    "producto bruto",
-    "produccion nacional",
-    "actividad economica",
-    "crecimiento",
-    "empleo",
-    "desempleo",
-    "ocupacion",
-    "ingreso laboral",
-    "remuneracion",
-    "exportacion",
-    "exportaciones",
-    "importacion",
-    "importaciones",
-    "balanza comercial",
-    "comercio exterior",
-    "terminos de intercambio",
-    "tipo de cambio",
-    "dolar",
-    "tasa de referencia",
-    "tasa de interes",
-    "politica monetaria",
-    "credito",
-    "liquidez",
-    "emision primaria",
-    "reservas internacionales",
-    "rin",
-    "recaudacion",
-    "ingresos tributarios",
-    "tributario",
-    "tributaria",
-    "gasto publico",
-    "inversion publica",
-    "deuda publica",
-    "deficit fiscal",
-    "resultado economico",
-    "economia peruana",
-    "inversion privada",
+    "inflacion", "ipc", "precio", "precios", "pbi", "producto bruto",
+    "produccion nacional", "actividad economica", "crecimiento", "empleo",
+    "desempleo", "ocupacion", "ingreso laboral", "remuneracion", "exportacion",
+    "exportaciones", "importacion", "importaciones", "balanza comercial",
+    "comercio exterior", "terminos de intercambio", "tipo de cambio", "dolar",
+    "tasa de referencia", "tasa de interes", "politica monetaria", "credito",
+    "liquidez", "emision primaria", "reservas internacionales", "rin",
+    "recaudacion", "ingresos tributarios", "tributario", "tributaria",
+    "gasto publico", "inversion publica", "deuda publica", "deficit fiscal",
+    "resultado economico", "economia peruana", "inversion privada",
+    "recaudar", "recaudacion tributaria", "ingresos fiscales"
 ]
 
 FRASES_PROHIBIDAS = [
-    "saltar a contenido",
-    "saltar al contenido",
-    "contenido principal",
-    "inicio",
-    "ver mas",
-    "leer mas",
-    "menu",
-    "contacto",
-    "transparencia",
-    "mapa del sitio",
-    "libro de reclamaciones",
-    "accesibilidad",
-    "buscar",
-    "facebook",
-    "twitter",
-    "youtube",
-    "instagram",
-    "somos el organismo",
-    "organo rector",
+    "saltar a contenido", "saltar al contenido", "contenido principal", "inicio",
+    "ver mas", "leer mas", "menu", "contacto", "transparencia", "mapa del sitio",
+    "libro de reclamaciones", "accesibilidad", "buscar", "facebook", "twitter",
+    "youtube", "instagram", "somos el organismo", "organo rector"
 ]
 
 BOILERPLATE = [
-    "somos el organismo central",
-    "organo rector de los sistemas nacionales",
-    "instituto nacional de estadistica e informatica",
-    "inei peru el instituto",
-    "ministerio de economia y finanzas",
-    "superintendencia nacional de aduanas",
+    "somos el organismo central", "organo rector de los sistemas nacionales",
+    "instituto nacional de estadistica e informatica", "inei peru el instituto",
+    "ministerio de economia y finanzas", "superintendencia nacional de aduanas"
 ]
 
 
 # ============================================================
-# FUNCIONES GENERALES
+# UTILIDADES
 # ============================================================
 
 def ahora_peru():
@@ -138,124 +83,73 @@ def ahora_peru():
 
 def normalizar(texto):
     texto = texto or ""
-    texto = unicodedata.normalize("NFKD", texto)
-    texto = "".join(
-        c for c in texto
-        if not unicodedata.combining(c)
-    )
+    texto = unicodedata.normalize("NFKD", str(texto))
+    texto = "".join(c for c in texto if not unicodedata.combining(c))
     return texto.lower().strip()
 
 
 def limpiar_texto(texto):
-    return re.sub(
-        r"\s+",
-        " ",
-        texto or ""
-    ).strip()
+    return re.sub(r"\s+", " ", texto or "").strip()
 
 
 def crear_id(texto):
     texto = normalizar(texto)
-    texto = re.sub(
-        r"[^a-z0-9\s-]",
-        "",
-        texto
-    )
-    texto = re.sub(
-        r"[\s-]+",
-        "-",
-        texto
-    )
+    texto = re.sub(r"[^a-z0-9\s-]", "", texto)
+    texto = re.sub(r"[\s-]+", "-", texto)
     return texto.strip("-")[:80]
 
 
 def es_archivo_binario(url):
-    ruta = urlparse(url).path.lower()
+    return urlparse(url).path.lower().endswith(EXTENSIONES_BINARIAS)
 
-    return ruta.endswith(
-        EXTENSIONES_BINARIAS
-    )
+
+def descargar(url):
+    r = requests.get(url, headers=HEADERS, timeout=TIMEOUT)
+    r.raise_for_status()
+    return r
 
 
 def descargar_html(url):
-    respuesta = requests.get(
-        url,
-        headers=HEADERS,
-        timeout=TIMEOUT,
-    )
+    r = descargar(url)
+    content_type = r.headers.get("Content-Type", "").lower()
 
-    respuesta.raise_for_status()
+    if "html" not in content_type and "xhtml" not in content_type:
+        raise ValueError(f"Contenido no HTML: {content_type}")
 
-    content_type = (
-        respuesta.headers
-        .get("Content-Type", "")
-        .lower()
-    )
+    if not r.encoding or r.encoding.lower() in ("iso-8859-1", "ascii"):
+        r.encoding = r.apparent_encoding or "utf-8"
 
-    if (
-        "text/html" not in content_type
-        and
-        "application/xhtml+xml" not in content_type
-    ):
-        raise ValueError(
-            f"Contenido no HTML: {content_type}"
-        )
+    return r.text
 
-    if respuesta.apparent_encoding:
-        respuesta.encoding = (
-            respuesta.apparent_encoding
-        )
-
-    return respuesta.text
-
-
-# ============================================================
-# FILTROS DE NOTICIAS
-# ============================================================
 
 def parece_noticia(titulo):
     t = normalizar(titulo)
 
-    if len(t) < 25 or len(t) > 220:
+    if len(t) < 18 or len(t) > 240:
         return False
 
-    if any(
-        frase in t
-        for frase in FRASES_PROHIBIDAS
-    ):
+    if any(frase in t for frase in FRASES_PROHIBIDAS):
         return False
 
-    return any(
-        palabra in t
-        for palabra in PALABRAS_ECONOMICAS
-    )
+    return any(p in t for p in PALABRAS_ECONOMICAS)
 
 
 def descripcion_valida(texto):
     t = normalizar(texto)
 
-    if len(t) < 70:
+    if len(t) < 55:
         return False
 
-    if any(
-        frase in t
-        for frase in BOILERPLATE
-    ):
+    if any(frase in t for frase in BOILERPLATE):
         return False
 
-    if any(
-        frase in t
-        for frase in FRASES_PROHIBIDAS
-    ):
+    if any(frase in t for frase in FRASES_PROHIBIDAS):
         return False
 
     return True
 
 
-def crear_resumen_corto(
-    texto,
-    max_chars=300,
-):
+def crear_resumen_corto(texto, max_chars=300):
     texto = limpiar_texto(texto)
 
     if len(texto) <= max_chars:
@@ -264,17 +158,19 @@ def crear_resumen_corto(
     corte = texto[:max_chars]
 
     if ". " in corte:
-        corte = (
-            corte.rsplit(". ", 1)[0]
-            + "."
-        )
+        corte = corte.rsplit(". ", 1)[0] + "."
     else:
-        corte = (
-            corte.rsplit(" ", 1)[0]
-            + "..."
-        )
+        corte = corte.rsplit(" ", 1)[0] + "..."
 
     return corte
+
+
+def resumen_fallback(titulo, fuente):
+    titulo = limpiar_texto(titulo)
+    return (
+        f"{fuente} publicó una actualización oficial relacionada con: "
+        f"{titulo}. Consulta la fuente oficial para revisar el detalle completo."
+    )
 
 
 # ============================================================
@@ -282,126 +178,84 @@ def crear_resumen_corto(
 # ============================================================
 
 MESES = {
-    "enero": 1,
-    "febrero": 2,
-    "marzo": 3,
-    "abril": 4,
-    "mayo": 5,
-    "junio": 6,
-    "julio": 7,
-    "agosto": 8,
-    "septiembre": 9,
-    "setiembre": 9,
-    "octubre": 10,
-    "noviembre": 11,
-    "diciembre": 12,
+    "ene": 1, "enero": 1,
+    "feb": 2, "febrero": 2,
+    "mar": 3, "marzo": 3,
+    "abr": 4, "abril": 4,
+    "may": 5, "mayo": 5,
+    "jun": 6, "junio": 6,
+    "jul": 7, "julio": 7,
+    "ago": 8, "agosto": 8,
+    "sep": 9, "set": 9, "sept": 9, "septiembre": 9, "setiembre": 9,
+    "oct": 10, "octubre": 10,
+    "nov": 11, "noviembre": 11,
+    "dic": 12, "diciembre": 12,
 }
 
 
-def interpretar_fecha(valor):
+def interpretar_fecha(valor, anio_referencia=None):
     if not valor:
         return None
 
-    valor = limpiar_texto(
-        str(valor)
-    )
+    valor = limpiar_texto(str(valor))
+    valor_iso = valor.replace("Z", "+00:00")
 
-    valor_iso = valor.replace(
-        "Z",
-        "+00:00",
-    )
-
-    formatos = [
+    for fmt in [
         "%Y-%m-%dT%H:%M:%S%z",
         "%Y-%m-%dT%H:%M:%S",
         "%Y-%m-%d",
         "%d/%m/%Y",
         "%d-%m-%Y",
-    ]
-
-    for formato in formatos:
+    ]:
         try:
-            fecha = datetime.strptime(
-                valor_iso,
-                formato,
-            )
-
+            fecha = datetime.strptime(valor_iso, fmt)
             if fecha.tzinfo is None:
-                fecha = fecha.replace(
-                    tzinfo=TZ_PERU
-                )
-
-            return fecha.astimezone(
-                TZ_PERU
-            )
-
+                fecha = fecha.replace(tzinfo=TZ_PERU)
+            return fecha.astimezone(TZ_PERU)
         except Exception:
             pass
 
-    match = re.search(
-        r"(\d{1,2})[/\-](\d{1,2})[/\-](\d{4})",
-        valor,
-    )
-
-    if match:
-        dia, mes, anio = map(
-            int,
-            match.groups(),
-        )
-
+    m = re.search(r"(\d{1,2})[/\-](\d{1,2})[/\-](\d{4})", valor)
+    if m:
         try:
-            return datetime(
-                anio,
-                mes,
-                dia,
-                tzinfo=TZ_PERU,
-            )
-
+            d, mes, y = map(int, m.groups())
+            return datetime(y, mes, d, tzinfo=TZ_PERU)
         except Exception:
             pass
 
-    texto_normalizado = normalizar(
-        valor
+    t = normalizar(valor)
+
+    m = re.search(
+        r"(\d{1,2})\s+(?:de\s+)?"
+        r"(ene(?:ro)?|feb(?:rero)?|mar(?:zo)?|abr(?:il)?|may(?:o)?|jun(?:io)?|"
+        r"jul(?:io)?|ago(?:sto)?|sep(?:tiembre)?|set(?:iembre)?|sept(?:iembre)?|"
+        r"oct(?:ubre)?|nov(?:iembre)?|dic(?:iembre)?)"
+        r"(?:\s+(?:de\s+)?(\d{4}))?",
+        t,
     )
 
-    match = re.search(
-        r"(\d{1,2})\s+de\s+"
-        r"(enero|febrero|marzo|abril|mayo|junio|"
-        r"julio|agosto|septiembre|setiembre|octubre|"
-        r"noviembre|diciembre)"
-        r"\s+(?:de\s+)?(\d{4})",
-        texto_normalizado,
-    )
+    if m:
+        dia = int(m.group(1))
+        mes_txt = m.group(2)
+        anio = int(m.group(3)) if m.group(3) else (anio_referencia or ahora_peru().year)
 
-    if match:
-        dia = int(
-            match.group(1)
-        )
+        mes = None
+        for nombre, numero in MESES.items():
+            if mes_txt.startswith(nombre):
+                mes = numero
+                break
 
-        mes = MESES[
-            match.group(2)
-        ]
-
-        anio = int(
-            match.group(3)
-        )
-
-        try:
-            return datetime(
-                anio,
-                mes,
-                dia,
-                tzinfo=TZ_PERU,
-            )
-
-        except Exception:
-            pass
+        if mes:
+            try:
+                return datetime(anio, mes, dia, tzinfo=TZ_PERU)
+            except Exception:
+                pass
 
     return None
 
 
 def extraer_fecha(soup):
-    metas = [
+    candidatos_meta = [
         {"property": "article:published_time"},
         {"name": "date"},
         {"name": "publication_date"},
@@ -409,412 +263,123 @@ def extraer_fecha(soup):
         {"itemprop": "datePublished"},
     ]
 
-    for attrs in metas:
-        meta = soup.find(
-            "meta",
-            attrs=attrs,
-        )
-
+    for attrs in candidatos_meta:
+        meta = soup.find("meta", attrs=attrs)
         if meta and meta.get("content"):
-            fecha = interpretar_fecha(
-                meta["content"]
-            )
-
+            fecha = interpretar_fecha(meta["content"])
             if fecha:
                 return fecha
 
     time_tag = soup.find("time")
-
     if time_tag:
-        valor = (
-            time_tag.get("datetime")
-            or
-            time_tag.get_text(
-                " ",
-                strip=True,
-            )
-        )
-
-        fecha = interpretar_fecha(
-            valor
-        )
-
+        valor = time_tag.get("datetime") or time_tag.get_text(" ", strip=True)
+        fecha = interpretar_fecha(valor)
         if fecha:
             return fecha
 
-    for script in soup.find_all(
-        "script",
-        attrs={
-            "type": "application/ld+json"
-        },
-    ):
+    for script in soup.find_all("script", attrs={"type": "application/ld+json"}):
         try:
-            contenido = (
-                script.string
-                or script.get_text()
-                or "{}"
-            )
-
-            datos = json.loads(
-                contenido
-            )
-
-            objetos = (
-                datos
-                if isinstance(datos, list)
-                else [datos]
-            )
+            contenido = script.string or script.get_text() or "{}"
+            datos = json.loads(contenido)
+            objetos = datos if isinstance(datos, list) else [datos]
 
             for obj in objetos:
-                if not isinstance(
-                    obj,
-                    dict,
-                ):
+                if not isinstance(obj, dict):
                     continue
 
-                fecha_json = (
-                    obj.get("datePublished")
-                    or
-                    obj.get("dateCreated")
-                )
-
                 fecha = interpretar_fecha(
-                    fecha_json
+                    obj.get("datePublished") or obj.get("dateCreated")
                 )
-
                 if fecha:
                     return fecha
-
         except Exception:
             pass
 
-    texto = limpiar_texto(
-        soup.get_text(
-            " ",
-            strip=True,
-        )
-    )
+    texto = limpiar_texto(soup.get_text(" ", strip=True))
 
-    match = re.search(
-        r"\b\d{1,2}\s+de\s+"
-        r"(?:enero|febrero|marzo|abril|mayo|junio|"
-        r"julio|agosto|septiembre|setiembre|octubre|"
-        r"noviembre|diciembre)"
-        r"\s+(?:de\s+)?\d{4}\b",
-        normalizar(texto),
-    )
+    patrones = [
+        r"\b\d{1,2}/\d{1,2}/\d{4}\b",
+        r"\b\d{1,2}\s+de\s+(?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre)\s+(?:de\s+)?\d{4}\b",
+    ]
 
-    if match:
-        return interpretar_fecha(
-            match.group(0)
-        )
+    for patron in patrones:
+        m = re.search(patron, normalizar(texto))
+        if m:
+            fecha = interpretar_fecha(m.group(0))
+            if fecha:
+                return fecha
 
     return None
 
 
 # ============================================================
-# RESÚMENES
+# RESUMEN DE PÁGINA
 # ============================================================
 
 def extraer_resumen(soup):
-    metas = [
-        {
-            "property":
-            "og:description"
-        },
-        {
-            "name":
-            "description"
-        },
-    ]
-
-    for attrs in metas:
-        meta = soup.find(
-            "meta",
-            attrs=attrs,
-        )
-
+    for attrs in [
+        {"property": "og:description"},
+        {"name": "description"},
+    ]:
+        meta = soup.find("meta", attrs=attrs)
         if meta:
-            texto = limpiar_texto(
-                meta.get(
-                    "content",
-                    "",
-                )
-            )
+            txt = limpiar_texto(meta.get("content", ""))
+            if descripcion_valida(txt):
+                return crear_resumen_corto(txt)
 
-            if descripcion_valida(
-                texto
-            ):
-                return crear_resumen_corto(
-                    texto
-                )
+    for selector in ["article p", "main p", ".content p", ".noticia p"]:
+        for p in soup.select(selector):
+            txt = limpiar_texto(p.get_text(" ", strip=True))
+            if descripcion_valida(txt):
+                return crear_resumen_corto(txt)
 
     for p in soup.find_all("p"):
-        texto = limpiar_texto(
-            p.get_text(
-                " ",
-                strip=True,
-            )
-        )
-
-        if descripcion_valida(
-            texto
-        ):
-            return crear_resumen_corto(
-                texto
-            )
+        txt = limpiar_texto(p.get_text(" ", strip=True))
+        if descripcion_valida(txt):
+            return crear_resumen_corto(txt)
 
     return ""
 
 
 def analizar_pagina(url):
     if es_archivo_binario(url):
+        return {"fecha": None, "resumen": ""}
+
+    try:
+        soup = BeautifulSoup(descargar_html(url), "html.parser")
         return {
-            "fecha": None,
-            "resumen": "",
+            "fecha": extraer_fecha(soup),
+            "resumen": extraer_resumen(soup),
         }
-
-    try:
-        html = descargar_html(
-            url
-        )
-
-        soup = BeautifulSoup(
-            html,
-            "html.parser",
-        )
-
-        return {
-            "fecha":
-                extraer_fecha(soup),
-            "resumen":
-                extraer_resumen(soup),
-        }
-
     except Exception as e:
-        print(
-            f"No se pudo analizar "
-            f"{url}: {e}"
-        )
-
-        return {
-            "fecha": None,
-            "resumen": "",
-        }
+        print(f"No se pudo analizar {url}: {e}")
+        return {"fecha": None, "resumen": ""}
 
 
 # ============================================================
-# INEI
+# APOYO: FECHA CERCA DEL ENLACE EN UNA PÁGINA ÍNDICE
 # ============================================================
 
-def obtener_inei():
-    noticias = []
+def fecha_cercana_enlace(enlace, anio_referencia=None):
+    candidatos = []
 
-    url = (
-        "https://www.inei.gob.pe/"
-        "prensa/noticias/"
-    )
+    padre = enlace.parent
+    for _ in range(4):
+        if padre is None:
+            break
+        candidatos.append(limpiar_texto(padre.get_text(" ", strip=True)))
+        padre = padre.parent
 
-    try:
-        soup = BeautifulSoup(
-            descargar_html(url),
-            "html.parser",
-        )
+    previo = enlace.find_previous(string=True)
+    if previo:
+        candidatos.insert(0, limpiar_texto(previo))
 
-        for enlace in soup.find_all(
-            "a",
-            href=True,
-        ):
-            titulo = limpiar_texto(
-                enlace.get_text(
-                    " ",
-                    strip=True,
-                )
-            )
+    for texto in candidatos:
+        fecha = interpretar_fecha(texto, anio_referencia=anio_referencia)
+        if fecha:
+            return fecha
 
-            href = enlace["href"]
-
-            if (
-                "/prensa/noticias/"
-                not in normalizar(href)
-            ):
-                continue
-
-            if not parece_noticia(
-                titulo
-            ):
-                continue
-
-            final = urljoin(
-                "https://www.inei.gob.pe",
-                href,
-            ).rstrip("/")
-
-            paginas_indice = {
-                "https://www.inei.gob.pe",
-                "https://www.inei.gob.pe/prensa",
-                (
-                    "https://www.inei.gob.pe/"
-                    "prensa/noticias"
-                ),
-            }
-
-            if final in paginas_indice:
-                continue
-
-            if es_archivo_binario(
-                final
-            ):
-                continue
-
-            noticias.append({
-                "fuente":
-                    "INEI",
-                "titulo":
-                    titulo,
-                "url_fuente":
-                    final,
-            })
-
-    except Exception as e:
-        print(
-            "Error INEI:",
-            e,
-        )
-
-    return noticias
-
-
-# ============================================================
-# MEF
-# ============================================================
-
-def obtener_mef():
-    noticias = []
-
-    url = (
-        "https://www.gob.pe/"
-        "institucion/mef/noticias"
-    )
-
-    try:
-        soup = BeautifulSoup(
-            descargar_html(url),
-            "html.parser",
-        )
-
-        for enlace in soup.find_all(
-            "a",
-            href=True,
-        ):
-            href = enlace["href"]
-
-            if (
-                "/institucion/mef/noticias/"
-                not in href
-            ):
-                continue
-
-            titulo = limpiar_texto(
-                enlace.get_text(
-                    " ",
-                    strip=True,
-                )
-            )
-
-            if not parece_noticia(
-                titulo
-            ):
-                continue
-
-            final = urljoin(
-                "https://www.gob.pe",
-                href,
-            )
-
-            if es_archivo_binario(
-                final
-            ):
-                continue
-
-            noticias.append({
-                "fuente":
-                    "MEF",
-                "titulo":
-                    titulo,
-                "url_fuente":
-                    final,
-            })
-
-    except Exception as e:
-        print(
-            "Error MEF:",
-            e,
-        )
-
-    return noticias
-
-
-# ============================================================
-# SUNAT
-# ============================================================
-
-def obtener_sunat():
-    noticias = []
-
-    url = (
-        "https://www.sunat.gob.pe/"
-        "salaprensa/lima/"
-    )
-
-    try:
-        soup = BeautifulSoup(
-            descargar_html(url),
-            "html.parser",
-        )
-
-        for enlace in soup.find_all(
-            "a",
-            href=True,
-        ):
-            titulo = limpiar_texto(
-                enlace.get_text(
-                    " ",
-                    strip=True,
-                )
-            )
-
-            if not parece_noticia(
-                titulo
-            ):
-                continue
-
-            final = urljoin(
-                url,
-                enlace["href"],
-            )
-
-            if es_archivo_binario(
-                final
-            ):
-                continue
-
-            noticias.append({
-                "fuente":
-                    "SUNAT",
-                "titulo":
-                    titulo,
-                "url_fuente":
-                    final,
-            })
-
-    except Exception as e:
-        print(
-            "Error SUNAT:",
-            e,
-        )
-
-    return noticias
+    return None
 
 
 # ============================================================
@@ -825,65 +390,178 @@ def obtener_bcrp():
     noticias = []
 
     urls = [
-        (
-            "https://www.bcrp.gob.pe/"
-            "transparencia/"
-            "notas-informativas.html"
-        ),
-        (
-            "https://www.bcrp.gob.pe/"
-            "publicaciones/"
-            "notas-de-estudios.html"
-        ),
+        "https://www.bcrp.gob.pe/transparencia/notas-informativas.html",
+        "https://www.bcrp.gob.pe/publicaciones/notas-de-estudios.html",
     ]
 
     for url in urls:
         try:
-            soup = BeautifulSoup(
-                descargar_html(url),
-                "html.parser",
-            )
+            soup = BeautifulSoup(descargar_html(url), "html.parser")
 
-            for enlace in soup.find_all(
-                "a",
-                href=True,
-            ):
-                titulo = limpiar_texto(
-                    enlace.get_text(
-                        " ",
-                        strip=True,
-                    )
-                )
+            for enlace in soup.find_all("a", href=True):
+                titulo = limpiar_texto(enlace.get_text(" ", strip=True))
+                href = enlace["href"]
 
-                if not parece_noticia(
-                    titulo
-                ):
+                if not parece_noticia(titulo):
                     continue
 
-                final = urljoin(
-                    "https://www.bcrp.gob.pe",
-                    enlace["href"],
-                )
+                final = urljoin("https://www.bcrp.gob.pe", href)
 
-                if es_archivo_binario(
-                    final
-                ):
-                    continue
+                fecha_indice = fecha_cercana_enlace(enlace)
 
                 noticias.append({
-                    "fuente":
-                        "BCRP",
-                    "titulo":
-                        titulo,
-                    "url_fuente":
-                        final,
+                    "fuente": "BCRP",
+                    "titulo": titulo,
+                    "url_fuente": final,
+                    "fecha_indice": fecha_indice,
+                    "resumen_indice": "",
                 })
 
         except Exception as e:
-            print(
-                "Error BCRP:",
-                e,
+            print("Error BCRP:", e)
+
+    return noticias
+
+
+# ============================================================
+# INEI
+# ============================================================
+
+def obtener_inei():
+    noticias = []
+    url = "https://www.inei.gob.pe/prensa/noticias/"
+
+    try:
+        soup = BeautifulSoup(descargar_html(url), "html.parser")
+
+        for enlace in soup.find_all("a", href=True):
+            href = enlace["href"]
+            titulo = limpiar_texto(enlace.get_text(" ", strip=True))
+
+            if "/prensa/noticias/" not in normalizar(href):
+                continue
+
+            if not parece_noticia(titulo):
+                continue
+
+            final = urljoin("https://www.inei.gob.pe", href).rstrip("/")
+
+            if final in {
+                "https://www.inei.gob.pe",
+                "https://www.inei.gob.pe/prensa",
+                "https://www.inei.gob.pe/prensa/noticias",
+            }:
+                continue
+
+            fecha_indice = fecha_cercana_enlace(enlace)
+
+            resumen_indice = ""
+            padre = enlace.parent
+
+            for _ in range(3):
+                if padre is None:
+                    break
+                textos = [
+                    limpiar_texto(p.get_text(" ", strip=True))
+                    for p in padre.find_all("p")
+                ]
+                resumen_indice = next(
+                    (t for t in textos if descripcion_valida(t)),
+                    ""
+                )
+                if resumen_indice:
+                    break
+                padre = padre.parent
+
+            noticias.append({
+                "fuente": "INEI",
+                "titulo": titulo,
+                "url_fuente": final,
+                "fecha_indice": fecha_indice,
+                "resumen_indice": resumen_indice,
+            })
+
+    except Exception as e:
+        print("Error INEI:", e)
+
+    return noticias
+
+
+# ============================================================
+# MEF
+# ============================================================
+
+def obtener_mef():
+    noticias = []
+    url = "https://www.gob.pe/institucion/mef/noticias"
+
+    try:
+        soup = BeautifulSoup(descargar_html(url), "html.parser")
+
+        for enlace in soup.find_all("a", href=True):
+            href = enlace["href"]
+
+            if "/institucion/mef/noticias/" not in href:
+                continue
+
+            titulo = limpiar_texto(enlace.get_text(" ", strip=True))
+
+            if not parece_noticia(titulo):
+                continue
+
+            final = urljoin("https://www.gob.pe", href)
+
+            noticias.append({
+                "fuente": "MEF",
+                "titulo": titulo,
+                "url_fuente": final,
+                "fecha_indice": fecha_cercana_enlace(enlace),
+                "resumen_indice": "",
+            })
+
+    except Exception as e:
+        print("Error MEF:", e)
+
+    return noticias
+
+
+# ============================================================
+# SUNAT
+# ============================================================
+
+def obtener_sunat():
+    noticias = []
+    url = "https://www.sunat.gob.pe/salaprensa/lima/"
+    anio_actual = ahora_peru().year
+
+    try:
+        soup = BeautifulSoup(descargar_html(url), "html.parser")
+
+        for enlace in soup.find_all("a", href=True):
+            titulo = limpiar_texto(enlace.get_text(" ", strip=True))
+
+            if not parece_noticia(titulo):
+                continue
+
+            final = urljoin(url, enlace["href"])
+
+            # SUNAT publica varias notas como documentos. No se descartan aquí:
+            # se conserva título y fecha del índice aunque el destino no sea HTML.
+            fecha_indice = fecha_cercana_enlace(
+                enlace,
+                anio_referencia=anio_actual
             )
+
+            noticias.append({
+                "fuente": "SUNAT",
+                "titulo": titulo,
+                "url_fuente": final,
+                "fecha_indice": fecha_indice,
+                "resumen_indice": "",
+            })
+
+    except Exception as e:
+        print("Error SUNAT:", e)
 
     return noticias
 
@@ -895,131 +573,52 @@ def obtener_bcrp():
 def clasificar(titulo):
     t = normalizar(titulo)
 
-    if any(
-        x in t
-        for x in [
-            "inflacion",
-            "ipc",
-            "precios",
-        ]
-    ):
-        return (
-            "Precios e inflación"
-        )
+    if any(x in t for x in ["inflacion", "ipc", "precios"]):
+        return "Precios e inflación"
 
-    if any(
-        x in t
-        for x in [
-            "pbi",
-            "produccion",
-            "actividad economica",
-            "crecimiento",
-        ]
-    ):
-        return (
-            "Actividad económica"
-        )
+    if any(x in t for x in ["pbi", "produccion", "actividad economica", "crecimiento"]):
+        return "Actividad económica"
 
-    if any(
-        x in t
-        for x in [
-            "exportacion",
-            "importacion",
-            "balanza comercial",
-            "comercio exterior",
-            "terminos de intercambio",
-        ]
-    ):
-        return (
-            "Sector externo"
-        )
+    if any(x in t for x in [
+        "exportacion", "importacion", "balanza comercial",
+        "comercio exterior", "terminos de intercambio"
+    ]):
+        return "Sector externo"
 
-    if any(
-        x in t
-        for x in [
-            "tipo de cambio",
-            "dolar",
-        ]
-    ):
-        return (
-            "Tipo de cambio"
-        )
+    if any(x in t for x in ["tipo de cambio", "dolar"]):
+        return "Tipo de cambio"
 
-    if any(
-        x in t
-        for x in [
-            "tasa de referencia",
-            "tasa de interes",
-            "credito",
-            "liquidez",
-            "monetaria",
-            "reservas internacionales",
-        ]
-    ):
-        return (
-            "Monetario y financiero"
-        )
+    if any(x in t for x in [
+        "tasa de referencia", "tasa de interes", "credito",
+        "liquidez", "monetaria", "reservas internacionales"
+    ]):
+        return "Monetario y financiero"
 
-    if any(
-        x in t
-        for x in [
-            "recaudacion",
-            "tribut",
-            "gasto publico",
-            "inversion publica",
-            "deuda publica",
-            "fiscal",
-        ]
-    ):
-        return (
-            "Sector fiscal"
-        )
+    if any(x in t for x in [
+        "recaudacion", "recaudar", "tribut", "gasto publico",
+        "inversion publica", "deuda publica", "fiscal"
+    ]):
+        return "Sector fiscal"
 
-    if any(
-        x in t
-        for x in [
-            "empleo",
-            "desempleo",
-            "ocupacion",
-            "remuneracion",
-            "ingreso laboral",
-        ]
-    ):
-        return (
-            "Mercado laboral"
-        )
+    if any(x in t for x in [
+        "empleo", "desempleo", "ocupacion", "remuneracion", "ingreso laboral"
+    ]):
+        return "Mercado laboral"
 
     return "Economía peruana"
 
 
-def obtener_base_relacionada(
-    titulo,
-):
+def obtener_base_relacionada(titulo):
     t = normalizar(titulo)
 
     palabras = [
-        "inflacion",
-        "ipc",
-        "pbi",
-        "produccion",
-        "exportacion",
-        "importacion",
-        "balanza comercial",
-        "tipo de cambio",
-        "tasa de referencia",
-        "credito",
-        "liquidez",
-        "reservas internacionales",
-        "terminos de intercambio",
+        "inflacion", "ipc", "pbi", "produccion", "exportacion", "importacion",
+        "balanza comercial", "tipo de cambio", "tasa de referencia", "credito",
+        "liquidez", "reservas internacionales", "terminos de intercambio",
+        "recaudacion"
     ]
 
-    if any(
-        p in t
-        for p in palabras
-    ):
-        return BASES_URL
-
-    return ""
+    return BASES_URL if any(p in t for p in palabras) else ""
 
 
 # ============================================================
@@ -1030,212 +629,126 @@ def puntuar(titulo, fecha):
     puntos = 0
     t = normalizar(titulo)
 
-    palabras_importantes = [
-        "pbi",
-        "inflacion",
-        "tasa de referencia",
-        "produccion nacional",
-        "empleo",
-        "exportacion",
-        "importacion",
-        "tipo de cambio",
-        "recaudacion",
-    ]
-
-    for palabra in palabras_importantes:
+    for palabra in [
+        "pbi", "inflacion", "tasa de referencia", "produccion nacional",
+        "empleo", "exportacion", "importacion", "tipo de cambio",
+        "recaudacion", "ingresos tributarios"
+    ]:
         if palabra in t:
             puntos += 3
 
     if fecha:
-        dias = max(
-            0,
-            (
-                ahora_peru()
-                - fecha
-            ).days,
-        )
-
-        puntos += max(
-            0,
-            DIAS_MAXIMOS - dias,
-        )
+        dias = max(0, (ahora_peru() - fecha).days)
+        puntos += max(0, DIAS_MAXIMOS - dias)
 
     return puntos
 
 
 # ============================================================
-# PREPARACIÓN FINAL
+# PREPARACIÓN Y BALANCE ENTRE FUENTES
 # ============================================================
 
-def preparar_noticias(
-    candidatas,
-):
+def preparar_noticias(candidatas):
     resultado = []
-
     urls_vistas = set()
     titulos_vistos = set()
 
-    limite = (
-        ahora_peru()
-        - timedelta(
-            days=DIAS_MAXIMOS
-        )
-    )
+    limite = ahora_peru() - timedelta(days=DIAS_MAXIMOS)
 
     for noticia in candidatas:
-        titulo = limpiar_texto(
-            noticia.get(
-                "titulo",
-                "",
-            )
-        )
-
-        url = noticia.get(
-            "url_fuente",
-            "",
-        )
+        titulo = limpiar_texto(noticia.get("titulo", ""))
+        url = noticia.get("url_fuente", "")
 
         if not titulo or not url:
             continue
 
-        if es_archivo_binario(
-            url
-        ):
+        titulo_n = normalizar(titulo)
+
+        if titulo_n in titulos_vistos or url in urls_vistas:
             continue
 
-        titulo_n = normalizar(
-            titulo
-        )
+        titulos_vistos.add(titulo_n)
+        urls_vistas.add(url)
 
-        if (
-            titulo_n
-            in titulos_vistos
-            or
-            url
-            in urls_vistas
-        ):
-            continue
+        fecha = noticia.get("fecha_indice")
+        resumen = limpiar_texto(noticia.get("resumen_indice", ""))
 
-        titulos_vistos.add(
-            titulo_n
-        )
+        # Solo intenta abrir el destino si es HTML.
+        if not es_archivo_binario(url):
+            detalle = analizar_pagina(url)
 
-        urls_vistas.add(
-            url
-        )
+            if not fecha:
+                fecha = detalle["fecha"]
 
-        detalle = analizar_pagina(
-            url
-        )
+            if not resumen:
+                resumen = detalle["resumen"]
 
-        fecha = detalle["fecha"]
-        resumen = detalle["resumen"]
+        # Para BCRP/SUNAT permitimos conservar notas aunque el detalle sea PDF
+        # o la página no entregue un resumen usable.
+        if not resumen and noticia["fuente"] in ("BCRP", "SUNAT"):
+            resumen = resumen_fallback(titulo, noticia["fuente"])
 
-        # Sin resumen útil, no se publica.
         if not resumen:
             continue
 
-        # Si existe fecha, debe pertenecer
-        # a los últimos 30 días.
+        # Una fecha conocida debe estar dentro de la ventana.
         if fecha:
-            if (
-                fecha > ahora_peru()
-                or
-                fecha < limite
-            ):
+            if fecha > ahora_peru() or fecha < limite:
                 continue
 
-            fecha_texto = (
-                fecha.strftime(
-                    "%d/%m/%Y"
-                )
-            )
-
-            fecha_iso = (
-                fecha.strftime(
-                    "%Y-%m-%d"
-                )
-            )
-
+            fecha_texto = fecha.strftime("%d/%m/%Y")
+            fecha_iso = fecha.strftime("%Y-%m-%d")
             fecha_orden = fecha
-
         else:
-            # Algunas páginas oficiales no
-            # exponen fecha de publicación.
             fecha_texto = ""
             fecha_iso = ""
-            fecha_orden = datetime(
-                1900,
-                1,
-                1,
-                tzinfo=TZ_PERU,
-            )
+            fecha_orden = datetime(1900, 1, 1, tzinfo=TZ_PERU)
 
         resultado.append({
             "id": (
-                (
-                    fecha.strftime(
-                        "%Y%m%d"
-                    )
-                    if fecha
-                    else "sin-fecha"
-                )
+                (fecha.strftime("%Y%m%d") if fecha else "sin-fecha")
                 + "-"
                 + crear_id(titulo)
             ),
-            "fecha":
-                fecha_texto,
-            "fecha_iso":
-                fecha_iso,
-            "fuente":
-                noticia["fuente"],
-            "categoria":
-                clasificar(titulo),
-            "titulo":
-                titulo,
-            "resumen":
-                resumen,
-            "url_fuente":
-                url,
-            "url_base":
-                obtener_base_relacionada(
-                    titulo
-                ),
-            "_fecha":
-                fecha_orden,
-            "_score":
-                puntuar(
-                    titulo,
-                    fecha,
-                ),
+            "fecha": fecha_texto,
+            "fecha_iso": fecha_iso,
+            "fuente": noticia["fuente"],
+            "categoria": clasificar(titulo),
+            "titulo": titulo,
+            "resumen": crear_resumen_corto(resumen),
+            "url_fuente": url,
+            "url_base": obtener_base_relacionada(titulo),
+            "_fecha": fecha_orden,
+            "_score": puntuar(titulo, fecha),
         })
 
     resultado.sort(
-        key=lambda n: (
-            n["_fecha"],
-            n["_score"],
-        ),
-        reverse=True,
+        key=lambda n: (n["_fecha"], n["_score"]),
+        reverse=True
     )
 
-    resultado = (
-        resultado[
-            :MAX_NOTICIAS
-        ]
-    )
+    # Evita que una sola institución ocupe casi toda la página.
+    seleccion = []
+    conteo_fuente = {}
 
     for item in resultado:
-        item.pop(
-            "_fecha",
-            None,
-        )
+        fuente = item["fuente"]
+        usados = conteo_fuente.get(fuente, 0)
 
-        item.pop(
-            "_score",
-            None,
-        )
+        if usados >= MAX_POR_FUENTE:
+            continue
 
-    return resultado
+        seleccion.append(item)
+        conteo_fuente[fuente] = usados + 1
+
+        if len(seleccion) >= MAX_NOTICIAS:
+            break
+
+    for item in seleccion:
+        item.pop("_fecha", None)
+        item.pop("_score", None)
+
+    return seleccion
 
 
 # ============================================================
@@ -1243,65 +756,34 @@ def preparar_noticias(
 # ============================================================
 
 def main():
-    print(
-        "Buscando novedades "
-        "económicas oficiales..."
-    )
+    print("Buscando novedades económicas oficiales...")
 
     candidatas = []
+    candidatas.extend(obtener_bcrp())
+    candidatas.extend(obtener_inei())
+    candidatas.extend(obtener_mef())
+    candidatas.extend(obtener_sunat())
 
-    candidatas.extend(
-        obtener_bcrp()
-    )
+    print(f"Publicaciones candidatas: {len(candidatas)}")
 
-    candidatas.extend(
-        obtener_inei()
-    )
+    noticias = preparar_noticias(candidatas)
 
-    candidatas.extend(
-        obtener_mef()
-    )
+    por_fuente = {}
+    for n in noticias:
+        por_fuente[n["fuente"]] = por_fuente.get(n["fuente"], 0) + 1
 
-    candidatas.extend(
-        obtener_sunat()
-    )
-
-    print(
-        "Publicaciones candidatas:",
-        len(candidatas),
-    )
-
-    noticias = preparar_noticias(
-        candidatas
-    )
+    print("Noticias seleccionadas por fuente:", por_fuente)
 
     salida = {
-        "actualizado":
-            ahora_peru().strftime(
-                "%Y-%m-%d"
-            ),
-        "total":
-            len(noticias),
-        "noticias":
-            noticias,
+        "actualizado": ahora_peru().strftime("%Y-%m-%d"),
+        "total": len(noticias),
+        "noticias": noticias,
     }
 
-    with open(
-        ARCHIVO_SALIDA,
-        "w",
-        encoding="utf-8",
-    ) as archivo:
-        json.dump(
-            salida,
-            archivo,
-            ensure_ascii=False,
-            indent=2,
-        )
+    with open(ARCHIVO_SALIDA, "w", encoding="utf-8") as archivo:
+        json.dump(salida, archivo, ensure_ascii=False, indent=2)
 
-    print(
-        "actualidad.json actualizado "
-        f"con {len(noticias)} noticias."
-    )
+    print(f"actualidad.json actualizado con {len(noticias)} noticias.")
 
 
 if __name__ == "__main__":

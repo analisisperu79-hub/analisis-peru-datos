@@ -1,11 +1,11 @@
 {
   "actualizado": "2026-09-26",
-  "total": 8,
+  "total": 7,
   "noticias": [
     {
-      "id": "20260921-gobierno-fortalece-la-confianza-en-la-economia-peruana-ante-calificadoras-de-rie",
-      "fecha": "21/09/2026",
-      "fecha_iso": "2026-09-21",
+      "id": "20260922-gobierno-fortalece-la-confianza-en-la-economia-peruana-ante-calificadoras-de-rie",
+      "fecha": "22/09/2026",
+      "fecha_iso": "2026-09-22",
       "fuente": "MEF",
       "categoria": "Economía peruana",
       "titulo": "Gobierno fortalece la confianza en la economía peruana ante calificadoras de riesgo en Nueva York",
@@ -14,9 +14,9 @@
       "url_base": ""
     },
     {
-      "id": "20260916-mef-comisionados-de-alto-nivel-formularan-propuestas-para-una-nueva-generacion-d",
-      "fecha": "16/09/2026",
-      "fecha_iso": "2026-09-16",
+      "id": "20260918-mef-comisionados-de-alto-nivel-formularan-propuestas-para-una-nueva-generacion-d",
+      "fecha": "18/09/2026",
+      "fecha_iso": "2026-09-18",
       "fuente": "MEF",
       "categoria": "Economía peruana",
       "titulo": "MEF: Comisionados de Alto Nivel formularán propuestas para una nueva generación de reformas estructurales en la economía peruana",
@@ -25,14 +25,25 @@
       "url_base": ""
     },
     {
-      "id": "20260915-mef-la-economia-peruana-crecio-36-en-julio-de-2026-tasa-mayor-a-la-registrada-en",
-      "fecha": "15/09/2026",
-      "fecha_iso": "2026-09-15",
+      "id": "20260916-mef-la-economia-peruana-crecio-36-en-julio-de-2026-tasa-mayor-a-la-registrada-en",
+      "fecha": "16/09/2026",
+      "fecha_iso": "2026-09-16",
       "fuente": "MEF",
       "categoria": "Economía peruana",
       "titulo": "MEF: La economía peruana creció 3,6% en julio de 2026, tasa mayor a la registrada en el mes previo y acumuló 28 meses de expansión continua",
       "resumen": "La actividad económica registró un mayor dinamismo en julio y mantuvo una trayectoria favorable, impulsada por el crecimiento de los sectores no primarios vinculado al fortalecimiento de la demanda interna.&nbsp;Los indicadores adelantados continúan mostrando señales... #gobpe",
       "url_fuente": "https://www.gob.pe/institucion/mef/noticias/1444808-mef-la-economia-peruana-crecio-3-6-en-julio-de-2026-tasa-mayor-a-la-registrada-en-el-mes-previo-y-acumulo-28-meses-de-expansion-continua",
+      "url_base": ""
+    },
+    {
+      "id": "20260911-sunat-proyecta-recaudar-mas-de-214-mil-millones-de-soles-en-el-ano-2027",
+      "fecha": "11/09/2026",
+      "fecha_iso": "2026-09-11",
+      "fuente": "SUNAT",
+      "categoria": "Sector fiscal",
+      "titulo": "SUNAT PROYECTA RECAUDAR MÁS DE 214 MIL MILLONES DE SOLES EN EL AÑO 2027",
+      "resumen": "SUNAT publicó una actualización oficial relacionada con: SUNAT PROYECTA RECAUDAR MÁS DE 214 MIL MILLONES DE SOLES EN EL AÑO 2027. Consulta la fuente oficial para revisar el detalle completo.",
+      "url_fuente": "https://www.sunat.gob.pe/salaprensa/2026/setiembre/NotaPrensaN0542026.doc",
       "url_base": ""
     },
     {
@@ -47,48 +58,26 @@
       "url_base": ""
     },
     {
-      "id": "20260903-gobierno-dinamiza-la-inversion-privada-para-prevenir-danos-y-proteger-a-la-pobla",
-      "fecha": "03/09/2026",
-      "fecha_iso": "2026-09-03",
-      "fuente": "MEF",
-      "categoria": "Economía peruana",
-      "titulo": "Gobierno dinamiza la inversión privada para prevenir daños y proteger a la población ante El Niño",
-      "resumen": "Poder Ejecutivo habilitó mecanismo exprés en Obras por Impuestos para intervenciones de prevención, preparación, respuesta y rehabilitación frente al Fenómeno El Niño 2026-2027.&nbsp;El procedimiento se reduce a menos de 30 días hábiles, desde la priorización de las... #gobpe",
-      "url_fuente": "https://www.gob.pe/institucion/mef/noticias/1438579-gobierno-dinamiza-la-inversion-privada-para-prevenir-danos-y-proteger-a-la-poblacion-ante-el-nino",
-      "url_base": ""
-    },
-    {
-      "id": "20260831-gobierno-preve-la-consolidacion-de-un-nuevo-ciclo-de-inversiones-entre-el-2026-y",
-      "fecha": "31/08/2026",
-      "fecha_iso": "2026-08-31",
-      "fuente": "MEF",
-      "categoria": "Actividad económica",
-      "titulo": "Gobierno prevé la consolidación de un nuevo ciclo de inversiones entre el 2026 y 2030, lo que permitirá dinamizar la actividad económica",
-      "resumen": "El Marco Macroeconómico Multianual recientemente aprobado remarca que el país cuenta con una cartera diversificada de proyectos de inversión por alrededor de US$ 116 mil millones.Entre 2028 y 2030, se prevé impulsar proyectos de agua y saneamiento, salud, educación, entre... #gobpe",
-      "url_fuente": "https://www.gob.pe/institucion/mef/noticias/1436916-gobierno-preve-la-consolidacion-de-un-nuevo-ciclo-de-inversiones-entre-el-2026-y-2030-lo-que-permitira-dinamizar-la-actividad-economica",
-      "url_base": ""
-    },
-    {
-      "id": "20260830-mef-hace-obligatorio-el-uso-de-bim-en-14-tipologias-de-inversion-publica-para-el",
-      "fecha": "30/08/2026",
-      "fecha_iso": "2026-08-30",
-      "fuente": "MEF",
+      "id": "20260907-sunat-ingresos-tributarios-aumentaron-173-en-agosto",
+      "fecha": "07/09/2026",
+      "fecha_iso": "2026-09-07",
+      "fuente": "SUNAT",
       "categoria": "Sector fiscal",
-      "titulo": "MEF hace obligatorio el uso de BIM en 14 tipologías de inversión pública para elevar la calidad y eficiencia de los proyectos",
-      "resumen": "Las inversiones del Gobierno Nacional y los gobiernos regionales comprendidas en 14 tipologías deberán aplicar esta metodología, que permite integrar información, anticipar riesgos y mejorar la gestión de los proyectos durante su ciclo de vida.&nbsp;El Ministerio de Economía y... #gobpe",
-      "url_fuente": "https://www.gob.pe/institucion/mef/noticias/1436317-mef-hace-obligatorio-el-uso-de-bim-en-14-tipologias-de-inversion-publica-para-elevar-la-calidad-y-eficiencia-de-los-proyectos",
+      "titulo": "SUNAT: INGRESOS TRIBUTARIOS AUMENTARON 17,3% EN AGOSTO",
+      "resumen": "SUNAT publicó una actualización oficial relacionada con: SUNAT: INGRESOS TRIBUTARIOS AUMENTARON 17,3% EN AGOSTO. Consulta la fuente oficial para revisar el detalle completo.",
+      "url_fuente": "https://www.sunat.gob.pe/salaprensa/2026/setiembre/NotaPrensaN0532026.docx",
       "url_base": ""
     },
     {
-      "id": "20260828-mef-pbi-crecera-34-en-el-2026-y-2027-y-4-en-los-siguientes-anos-gracias-a-la-inv",
-      "fecha": "28/08/2026",
-      "fecha_iso": "2026-08-28",
-      "fuente": "MEF",
-      "categoria": "Actividad económica",
-      "titulo": "MEF: PBI crecerá 3,4 % en el 2026 y 2027 y 4 % en los siguientes años gracias a la inversión privada",
-      "resumen": "Consejo de Ministros aprobó el Marco Macroeconómico Multianual 2027 – 2030, documento que presenta las perspectivas de la economía peruana para 2026 y los próximos cuatro años.El documento destaca la necesidad de adoptar medidas correctivas frente a la alta cantidad de... #gobpe",
-      "url_fuente": "https://www.gob.pe/institucion/mef/noticias/1435798-mef-pbi-crecera-3-4-en-el-2026-y-2027-y-4-en-los-siguientes-anos-gracias-a-la-inversion-privada",
-      "url_base": "https://analisisperudatos.blogspot.com/p/bases-de-datos_01581930746.html"
+      "id": "sin-fecha-sunat-rinde-cuentas",
+      "fecha": "",
+      "fecha_iso": "",
+      "fuente": "SUNAT",
+      "categoria": "Economía peruana",
+      "titulo": "SUNAT Rinde Cuentas",
+      "resumen": "RENDICIÓN DE CUENTAS es una nueva sección de nuestra página web en la cual usted encontrará toda la información sobre el manejo institucional y presupuestal de la SUNAT .",
+      "url_fuente": "https://www.sunat.gob.pe/cuentassunat/index.html",
+      "url_base": ""
     }
   ]
 }

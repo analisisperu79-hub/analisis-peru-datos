@@ -64,7 +64,8 @@ FRASES_PROHIBIDAS = [
     "saltar a contenido", "saltar al contenido", "contenido principal", "inicio",
     "ver mas", "leer mas", "menu", "contacto", "transparencia", "mapa del sitio",
     "libro de reclamaciones", "accesibilidad", "buscar", "facebook", "twitter",
-    "youtube", "instagram", "somos el organismo", "organo rector"
+    "youtube", "instagram", "somos el organismo", "organo rector",
+    "sunat rinde cuentas", "rendicion de cuentas", "rendición de cuentas"
 ]
 
 BOILERPLATE = [

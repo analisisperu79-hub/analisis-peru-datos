@@ -1,194 +1,953 @@
-{
-  "actualizado": "2026-09-26",
-  "noticias": [
-    {
-      "id": "saltar-a-contenido-principal",
-      "fecha": "26/09/2026",
-      "fuente": "INEI",
-      "categoria": "Economía peruana",
-      "titulo": "Saltar a contenido principal",
-      "resumen": "Somos el organismo central y rector del Sistema Nacional de Estadística, responsable de normar, planear, dirigir, coordinar y supervisar las...",
-      "url_fuente": "https://www.inei.gob.pe#main",
-      "url_base": ""
-    },
-    {
-      "id": "departamentos-de-amazonas-cajamarca-puno-y-junin-aportaron-el-719-de-la-producci",
-      "fecha": "26/09/2026",
-      "fuente": "INEI",
-      "categoria": "Actividad económica",
-      "titulo": "Departamentos de Amazonas, Cajamarca, Puno y Junín aportaron el 71,9% de la producción total de café en julio de 2026",
-      "resumen": "INEI PERU El Instituto Nacional de Estadísticañ e Informática (INEI) es el Organo Rector de los Sistemas Nacionales de Estadística e Informática en el Perú.",
-      "url_fuente": "https://www.inei.gob.pe/institucion/inei/noticias/1448869-departamentos-de-amazonas-cajamarca-puno-y-junin-aportaron-el-71-9-de-la-produccion-total-de-cafe-en-julio-de-2026",
-      "url_base": "https://analisisperudatos.blogspot.com/p/bases-de-datos_01581930746.html"
-    },
-    {
-      "id": "produccion-nacional-crecio-356-en-julio-de-2026",
-      "fecha": "26/09/2026",
-      "fuente": "INEI",
-      "categoria": "Actividad económica",
-      "titulo": "Producción nacional creció 3,56% en julio de 2026",
-      "resumen": "INEI PERU El Instituto Nacional de Estadísticañ e Informática (INEI) es el Organo Rector de los Sistemas Nacionales de Estadística e Informática en el Perú.",
-      "url_fuente": "https://www.inei.gob.pe/institucion/inei/noticias/1444369-produccion-nacional-crecio-3-56-en-julio-de-2026",
-      "url_base": "https://analisisperudatos.blogspot.com/p/bases-de-datos_01581930746.html"
-    },
-    {
-      "id": "se-incrementa-el-acceso-al-sistema-financiero-de-mujeres-y-hombres",
-      "fecha": "26/09/2026",
-      "fuente": "INEI",
-      "categoria": "Economía peruana",
-      "titulo": "Se incrementa el acceso al sistema financiero de mujeres y hombres",
-      "resumen": "INEI PERU El Instituto Nacional de Estadísticañ e Informática (INEI) es el Organo Rector de los Sistemas Nacionales de Estadística e Informática en el Perú.",
-      "url_fuente": "https://www.inei.gob.pe/institucion/inei/noticias/1443795-se-incrementa-el-acceso-al-sistema-financiero-de-mujeres-y-hombres",
-      "url_base": ""
-    },
-    {
-      "id": "inei-economia-de-19-departamentos-presentaron-resultados-positivos-en-el-segundo",
-      "fecha": "26/09/2026",
-      "fuente": "INEI",
-      "categoria": "Economía peruana",
-      "titulo": "INEI: Economía de 19 departamentos presentaron resultados positivos en el segundo trimestre de 2026",
-      "resumen": "INEI PERU El Instituto Nacional de Estadísticañ e Informática (INEI) es el Organo Rector de los Sistemas Nacionales de Estadística e Informática en el Perú.",
-      "url_fuente": "https://www.inei.gob.pe/institucion/inei/noticias/1443329-inei-economia-de-19-departamentos-presentaron-resultados-positivos-en-el-segundo-trimestre-de-2026",
-      "url_base": ""
-    },
-    {
-      "id": "inei-volumen-total-exportado-crecio-en-120-durante-julio-de-2026-impulsado-princ",
-      "fecha": "26/09/2026",
-      "fuente": "INEI",
-      "categoria": "Economía peruana",
-      "titulo": "INEI: Volumen total exportado creció en 12,0% durante julio de 2026 impulsado principalmente por los mayores embarques mineros",
-      "resumen": "INEI PERU El Instituto Nacional de Estadísticañ e Informática (INEI) es el Organo Rector de los Sistemas Nacionales de Estadística e Informática en el Perú.",
-      "url_fuente": "https://www.inei.gob.pe/institucion/inei/noticias/1443305-inei-volumen-total-exportado-crecio-en-12-0-durante-julio-de-2026-impulsado-principalmente-por-los-mayores-embarques-mineros",
-      "url_base": ""
-    },
-    {
-      "id": "inei-ucayali-reduce-su-ritmo-de-crecimiento-poblacional-y-encamina-un-cambio-en-",
-      "fecha": "26/09/2026",
-      "fuente": "INEI",
-      "categoria": "Actividad económica",
-      "titulo": "INEI: Ucayali reduce su ritmo de crecimiento poblacional y encamina un cambio en su estructura demográfica",
-      "resumen": "INEI PERU El Instituto Nacional de Estadísticañ e Informática (INEI) es el Organo Rector de los Sistemas Nacionales de Estadística e Informática en el Perú.",
-      "url_fuente": "https://www.inei.gob.pe/institucion/inei/noticias/1442239-inei-ucayali-reduce-su-ritmo-de-crecimiento-poblacional-y-encamina-un-cambio-en-su-estructura-demografica",
-      "url_base": ""
-    },
-    {
-      "id": "inei-disminuye-en-55-el-ingreso-de-extranjeros-al-peru-durante-el-segundo-trimes",
-      "fecha": "26/09/2026",
-      "fuente": "INEI",
-      "categoria": "Economía peruana",
-      "titulo": "INEI: Disminuye en 5,5% el ingreso de extranjeros al Perú durante el segundo trimestre de 2026",
-      "resumen": "INEI PERU El Instituto Nacional de Estadísticañ e Informática (INEI) es el Organo Rector de los Sistemas Nacionales de Estadística e Informática en el Perú.",
-      "url_fuente": "https://www.inei.gob.pe/institucion/inei/noticias/1439359-inei-disminuye-en-5-5-el-ingreso-de-extranjeros-al-peru-durante-el-segundo-trimestre-de-2026",
-      "url_base": ""
-    },
-    {
-      "id": "indicadores-economicos",
-      "fecha": "26/09/2026",
-      "fuente": "INEI",
-      "categoria": "Economía peruana",
-      "titulo": "Indicadores Económicos",
-      "resumen": "INEI PERU El Instituto Nacional de Estadísticañ e Informática (INEI) es el Organo Rector de los Sistemas Nacionales de Estadística e Informática en el Perú.",
-      "url_fuente": "https://www.inei.gob.pe/biblioteca-virtual/boletines/prueba/1/",
-      "url_base": ""
-    },
-    {
-      "id": "exportaciones-e-importaciones",
-      "fecha": "26/09/2026",
-      "fuente": "INEI",
-      "categoria": "Sector externo",
-      "titulo": "Exportaciones e Importaciones",
-      "resumen": "INEI PERU El Instituto Nacional de Estadísticañ e Informática (INEI) es el Organo Rector de los Sistemas Nacionales de Estadística e Informática en el Perú.",
-      "url_fuente": "https://www.inei.gob.pe/biblioteca-virtual/boletines/exportaciones-e-importaciones/1/",
-      "url_base": "https://analisisperudatos.blogspot.com/p/bases-de-datos_01581930746.html"
-    },
-    {
-      "id": "empleo-a-nivel-nacional",
-      "fecha": "26/09/2026",
-      "fuente": "INEI",
-      "categoria": "Mercado laboral",
-      "titulo": "Empleo a Nivel Nacional",
-      "resumen": "INEI PERU El Instituto Nacional de Estadísticañ e Informática (INEI) es el Organo Rector de los Sistemas Nacionales de Estadística e Informática en el Perú.",
-      "url_fuente": "https://www.inei.gob.pe/biblioteca-virtual/boletines/empleo-a-nivel-nacional-9721/1/",
-      "url_base": ""
-    },
-    {
-      "id": "panorama-economico-departamental",
-      "fecha": "26/09/2026",
-      "fuente": "INEI",
-      "categoria": "Economía peruana",
-      "titulo": "Panorama Económico Departamental",
-      "resumen": "INEI PERU El Instituto Nacional de Estadísticañ e Informática (INEI) es el Organo Rector de los Sistemas Nacionales de Estadística e Informática en el Perú.",
-      "url_fuente": "https://www.inei.gob.pe/biblioteca-virtual/boletines/panorama-economico-departamental/1/",
-      "url_base": ""
-    },
-    {
-      "id": "produccion-departamental-trimestral",
-      "fecha": "26/09/2026",
-      "fuente": "INEI",
-      "categoria": "Actividad económica",
-      "titulo": "Producción Departamental Trimestral",
-      "resumen": "INEI PERU El Instituto Nacional de Estadísticañ e Informática (INEI) es el Organo Rector de los Sistemas Nacionales de Estadística e Informática en el Perú.",
-      "url_fuente": "https://www.inei.gob.pe/biblioteca-virtual/boletines/produccion-nacional-departamenal-9836/1/",
-      "url_base": "https://analisisperudatos.blogspot.com/p/bases-de-datos_01581930746.html"
-    },
-    {
-      "id": "produccion-nacional-cifras-desestacionalizadas",
-      "fecha": "26/09/2026",
-      "fuente": "INEI",
-      "categoria": "Actividad económica",
-      "titulo": "Producción Nacional (Cifras Desestacionalizadas)",
-      "resumen": "INEI PERU El Instituto Nacional de Estadísticañ e Informática (INEI) es el Organo Rector de los Sistemas Nacionales de Estadística e Informática en el Perú.",
-      "url_fuente": "https://www.inei.gob.pe/biblioteca-virtual/boletines/produccion-nacional-cifras-desestacionalizadas-9646/1/",
-      "url_base": "https://analisisperudatos.blogspot.com/p/bases-de-datos_01581930746.html"
-    },
-    {
-      "id": "indicadores-economicos-y-sociales",
-      "fecha": "26/09/2026",
-      "fuente": "INEI",
-      "categoria": "Economía peruana",
-      "titulo": "Indicadores Económicos y Sociales",
-      "resumen": "INEI PERU El Instituto Nacional de Estadísticañ e Informática (INEI) es el Organo Rector de los Sistemas Nacionales de Estadística e Informática en el Perú.",
-      "url_fuente": "https://www.inei.gob.pe/biblioteca-virtual/boletines/indicadores-economicos-y-sociales/1/",
-      "url_base": ""
-    },
-    {
-      "id": "indice-precios-productor",
-      "fecha": "26/09/2026",
-      "fuente": "INEI",
-      "categoria": "Precios e inflación",
-      "titulo": "Indice Precios Productor",
-      "resumen": "INEI PERU El Instituto Nacional de Estadísticañ e Informática (INEI) es el Organo Rector de los Sistemas Nacionales de Estadística e Informática en el Perú.",
-      "url_fuente": "https://www.inei.gob.pe/biblioteca-virtual/boletines/indice-precios-productor-11493/1/",
-      "url_base": ""
-    },
-    {
-      "id": "mef-agiliza-la-atencion-de-inversiones-en-zonas-declaradas-en-estado-de-emergenc",
-      "fecha": "26/09/2026",
-      "fuente": "MEF",
-      "categoria": "Economía peruana",
-      "titulo": "MEF agiliza la atención de inversiones en zonas declaradas en Estado de Emergencia",
-      "resumen": "Nueva disposición permite registrar las inversiones en la cartera del Programa Multianual de Inversiones durante la fase de Ejecución, facilitando una respuesta más oportuna ante situaciones de emergencia.El Ministerio de Economía y Finanzas (MEF) aprobó una modificación al...",
-      "url_fuente": "https://www.gob.pe/institucion/mef/noticias/1448112-mef-agiliza-la-atencion-de-inversiones-en-zonas-declaradas-en-estado-de-emergencia",
-      "url_base": ""
-    },
-    {
-      "id": "mef-lidera-plataforma-regional-que-aborda-los-desafios-economicos-fiscales-y-fin",
-      "fecha": "26/09/2026",
-      "fuente": "MEF",
-      "categoria": "Sector fiscal",
-      "titulo": "MEF lidera plataforma regional que aborda los desafíos económicos, fiscales y financieros del cambio climático",
-      "resumen": "MEF fue elegido para ejercer la Presidencia Pro Tempore 2026-2027 en reconocimiento a su participación y contribución en la agenda regional de finanzas sostenibles.Con este encargo, el Perú refuerza su posicionamiento como un actor clave en el impulso de un desarrollo...",
-      "url_fuente": "https://www.gob.pe/institucion/mef/noticias/1447408-mef-lidera-plataforma-regional-que-aborda-los-desafios-economicos-fiscales-y-financieros-del-cambio-climatico",
-      "url_base": ""
-    },
-    {
-      "id": "prueba-actualidad",
-      "fecha": "25 septiembre 2026",
-      "fuente": "Análisis Perú",
-      "titulo": "Prueba de actualización automática de Actualidad",
-      "resumen": "Esta publicación de prueba confirma que la sección Actualidad de Análisis Perú puede cargar información directamente desde GitHub sin crear una nueva entrada en Blogger.",
-      "url_fuente": "https://analisisperudatos.blogspot.com/",
-      "url_base": "https://analisisperudatos.blogspot.com/p/bases-de-datos_01581930746.html"
-    }
-  ]
+import json
+import re
+import unicodedata
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+from urllib.parse import urljoin, urlparse
+
+import requests
+from bs4 import BeautifulSoup
+
+
+# ============================================================
+# CONFIGURACIÓN GENERAL
+# ============================================================
+
+ARCHIVO_SALIDA = Path("actualidad.json")
+
+MAX_NOTICIAS = 9
+DIAS_MAXIMOS = 14
+
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (compatible; AnalisisPeruBot/2.0; "
+        "+https://analisisperudatos.blogspot.com/)"
+    )
 }
+
+TIMEOUT = 25
+
+
+# ============================================================
+# PALABRAS ECONÓMICAS
+# ============================================================
+
+PALABRAS_ECONOMICAS = [
+    "inflacion",
+    "ipc",
+    "precios",
+    "pbi",
+    "producto bruto",
+    "produccion nacional",
+    "actividad economica",
+    "crecimiento",
+    "empleo",
+    "desempleo",
+    "ocupacion",
+    "ingreso laboral",
+    "remuneracion",
+    "exportacion",
+    "exportaciones",
+    "importacion",
+    "importaciones",
+    "balanza comercial",
+    "comercio exterior",
+    "terminos de intercambio",
+    "tipo de cambio",
+    "dolar",
+    "tasa de referencia",
+    "tasa de interes",
+    "politica monetaria",
+    "credito",
+    "liquidez",
+    "emision primaria",
+    "reservas internacionales",
+    "rin",
+    "recaudacion",
+    "ingresos tributarios",
+    "gasto publico",
+    "inversion publica",
+    "deuda publica",
+    "deficit fiscal",
+    "resultado economico",
+    "economia peruana",
+    "inversion privada",
+]
+
+
+# ============================================================
+# FRASES QUE NO DEBEN PUBLICARSE
+# ============================================================
+
+FRASES_PROHIBIDAS = [
+    "saltar a contenido",
+    "contenido principal",
+    "inicio",
+    "ver mas",
+    "leer mas",
+    "menu",
+    "contacto",
+    "transparencia",
+    "mapa del sitio",
+    "libro de reclamaciones",
+    "accesibilidad",
+    "buscar",
+    "facebook",
+    "twitter",
+    "youtube",
+    "instagram",
+]
+
+
+BOILERPLATE = [
+    "somos el organismo central",
+    "organo rector de los sistemas nacionales",
+    "instituto nacional de estadistica e informatica",
+    "inei peru el instituto",
+    "ministerio de economia y finanzas",
+    "superintendencia nacional de aduanas",
+]
+
+
+# ============================================================
+# UTILIDADES
+# ============================================================
+
+def normalizar(texto):
+    texto = texto or ""
+
+    texto = unicodedata.normalize("NFKD", texto)
+
+    texto = "".join(
+        c for c in texto
+        if not unicodedata.combining(c)
+    )
+
+    return texto.lower().strip()
+
+
+def limpiar_texto(texto):
+    if not texto:
+        return ""
+
+    texto = re.sub(r"\s+", " ", texto)
+
+    return texto.strip()
+
+
+def slug(texto):
+    texto = normalizar(texto)
+
+    texto = re.sub(
+        r"[^a-z0-9\s-]",
+        "",
+        texto
+    )
+
+    texto = re.sub(
+        r"[\s-]+",
+        "-",
+        texto
+    )
+
+    return texto.strip("-")[:80]
+
+
+def descargar_html(url):
+    respuesta = requests.get(
+        url,
+        headers=HEADERS,
+        timeout=TIMEOUT
+    )
+
+    respuesta.raise_for_status()
+
+    return respuesta.text
+
+
+def parece_noticia(titulo):
+    titulo_n = normalizar(titulo)
+
+    if len(titulo_n) < 25:
+        return False
+
+    if len(titulo_n) > 220:
+        return False
+
+    if any(
+        frase in titulo_n
+        for frase in FRASES_PROHIBIDAS
+    ):
+        return False
+
+    if not any(
+        palabra in titulo_n
+        for palabra in PALABRAS_ECONOMICAS
+    ):
+        return False
+
+    return True
+
+
+def descripcion_valida(texto):
+    texto_n = normalizar(texto)
+
+    if len(texto_n) < 70:
+        return False
+
+    if any(
+        frase in texto_n
+        for frase in BOILERPLATE
+    ):
+        return False
+
+    return True
+
+
+# ============================================================
+# EXTRAER INFORMACIÓN DE UNA NOTICIA
+# ============================================================
+
+def extraer_fecha(soup):
+    posibles = [
+        soup.find(
+            "meta",
+            attrs={"property": "article:published_time"}
+        ),
+        soup.find(
+            "meta",
+            attrs={"name": "date"}
+        ),
+        soup.find(
+            "meta",
+            attrs={"name": "publication_date"}
+        ),
+    ]
+
+    for elemento in posibles:
+
+        if not elemento:
+            continue
+
+        valor = elemento.get("content")
+
+        if not valor:
+            continue
+
+        fecha = interpretar_fecha(valor)
+
+        if fecha:
+            return fecha
+
+    time_tag = soup.find("time")
+
+    if time_tag:
+
+        valor = (
+            time_tag.get("datetime")
+            or time_tag.get_text(
+                " ",
+                strip=True
+            )
+        )
+
+        fecha = interpretar_fecha(valor)
+
+        if fecha:
+            return fecha
+
+    # JSON-LD
+    for script in soup.find_all(
+        "script",
+        attrs={"type": "application/ld+json"}
+    ):
+
+        try:
+            datos = json.loads(
+                script.string or "{}"
+            )
+
+            objetos = (
+                datos
+                if isinstance(datos, list)
+                else [datos]
+            )
+
+            for objeto in objetos:
+
+                if not isinstance(
+                    objeto,
+                    dict
+                ):
+                    continue
+
+                valor = objeto.get(
+                    "datePublished"
+                )
+
+                if valor:
+
+                    fecha = interpretar_fecha(
+                        valor
+                    )
+
+                    if fecha:
+                        return fecha
+
+        except Exception:
+            pass
+
+    return None
+
+
+def interpretar_fecha(valor):
+    if not valor:
+        return None
+
+    valor = limpiar_texto(valor)
+
+    formatos = [
+        "%Y-%m-%dT%H:%M:%S%z",
+        "%Y-%m-%dT%H:%M:%S",
+        "%Y-%m-%d",
+        "%d/%m/%Y",
+        "%d-%m-%Y",
+    ]
+
+    valor_limpio = valor.replace(
+        "Z",
+        "+00:00"
+    )
+
+    for formato in formatos:
+
+        try:
+            fecha = datetime.strptime(
+                valor_limpio,
+                formato
+            )
+
+            if fecha.tzinfo is None:
+                fecha = fecha.replace(
+                    tzinfo=timezone.utc
+                )
+
+            return fecha
+
+        except Exception:
+            continue
+
+    match = re.search(
+        r"(\d{1,2})[/\-](\d{1,2})[/\-](\d{4})",
+        valor
+    )
+
+    if match:
+
+        dia, mes, anio = map(
+            int,
+            match.groups()
+        )
+
+        try:
+            return datetime(
+                anio,
+                mes,
+                dia,
+                tzinfo=timezone.utc
+            )
+        except Exception:
+            pass
+
+    return None
+
+
+def extraer_resumen(soup):
+    metas = [
+        soup.find(
+            "meta",
+            attrs={"property": "og:description"}
+        ),
+        soup.find(
+            "meta",
+            attrs={"name": "description"}
+        ),
+    ]
+
+    for meta in metas:
+
+        if not meta:
+            continue
+
+        texto = limpiar_texto(
+            meta.get(
+                "content",
+                ""
+            )
+        )
+
+        if descripcion_valida(texto):
+            return texto[:420]
+
+    # Si los meta son institucionales,
+    # buscamos un párrafo real.
+    for p in soup.find_all("p"):
+
+        texto = limpiar_texto(
+            p.get_text(
+                " ",
+                strip=True
+            )
+        )
+
+        if descripcion_valida(texto):
+
+            if len(texto) > 420:
+                texto = (
+                    texto[:417]
+                    .rsplit(
+                        " ",
+                        1
+                    )[0]
+                    + "..."
+                )
+
+            return texto
+
+    return ""
+
+
+def analizar_pagina(
+    url,
+    fuente,
+    titulo
+):
+
+    try:
+        html = descargar_html(url)
+        soup = BeautifulSoup(
+            html,
+            "html.parser"
+        )
+
+        fecha = extraer_fecha(soup)
+        resumen = extraer_resumen(soup)
+
+        return {
+            "fecha_obj": fecha,
+            "resumen": resumen
+        }
+
+    except Exception as error:
+
+        print(
+            f"Error al analizar "
+            f"{fuente}: {url} -> {error}"
+        )
+
+        return {
+            "fecha_obj": None,
+            "resumen": ""
+        }
+
+
+# ============================================================
+# OBTENCIÓN DE ENLACES
+# ============================================================
+
+def obtener_enlaces_genericos(
+    url,
+    fuente,
+    palabras_url=None
+):
+    resultados = []
+
+    try:
+        html = descargar_html(url)
+
+        soup = BeautifulSoup(
+            html,
+            "html.parser"
+        )
+
+        for enlace in soup.find_all(
+            "a",
+            href=True
+        ):
+
+            titulo = limpiar_texto(
+                enlace.get_text(
+                    " ",
+                    strip=True
+                )
+            )
+
+            if not parece_noticia(
+                titulo
+            ):
+                continue
+
+            href = enlace["href"]
+
+            final = urljoin(
+                url,
+                href
+            )
+
+            if palabras_url:
+
+                url_n = normalizar(
+                    final
+                )
+
+                if not any(
+                    p in url_n
+                    for p in palabras_url
+                ):
+                    continue
+
+            resultados.append({
+                "fuente": fuente,
+                "titulo": titulo,
+                "url_fuente": final
+            })
+
+    except Exception as error:
+
+        print(
+            f"Error {fuente}:",
+            error
+        )
+
+    return resultados
+
+
+# ============================================================
+# FUENTES
+# ============================================================
+
+def obtener_inei():
+    return obtener_enlaces_genericos(
+        "https://www.inei.gob.pe/prensa/noticias/",
+        "INEI",
+        [
+            "noticia",
+            "prensa"
+        ]
+    )
+
+
+def obtener_mef():
+    return obtener_enlaces_genericos(
+        "https://www.gob.pe/institucion/mef/noticias",
+        "MEF",
+        [
+            "/noticias/"
+        ]
+    )
+
+
+def obtener_sunat():
+    return obtener_enlaces_genericos(
+        "https://www.sunat.gob.pe/salaprensa/lima/",
+        "SUNAT"
+    )
+
+
+def obtener_bcrp():
+    resultados = []
+
+    urls = [
+        (
+            "https://www.bcrp.gob.pe/"
+            "transparencia/notas-informativas.html"
+        ),
+        (
+            "https://www.bcrp.gob.pe/"
+            "publicaciones/notas-de-estudios.html"
+        ),
+    ]
+
+    for url in urls:
+
+        resultados.extend(
+            obtener_enlaces_genericos(
+                url,
+                "BCRP"
+            )
+        )
+
+    return resultados
+
+
+# ============================================================
+# CATEGORIZACIÓN
+# ============================================================
+
+def categorizar(titulo):
+    t = normalizar(titulo)
+
+    if any(
+        p in t
+        for p in [
+            "inflacion",
+            "ipc",
+            "precio"
+        ]
+    ):
+        return "Precios e inflación"
+
+    if any(
+        p in t
+        for p in [
+            "pbi",
+            "produccion",
+            "actividad economica",
+            "crecimiento"
+        ]
+    ):
+        return "Actividad económica"
+
+    if any(
+        p in t
+        for p in [
+            "exportacion",
+            "importacion",
+            "balanza comercial",
+            "comercio exterior",
+            "terminos de intercambio"
+        ]
+    ):
+        return "Sector externo"
+
+    if any(
+        p in t
+        for p in [
+            "tipo de cambio",
+            "dolar"
+        ]
+    ):
+        return "Tipo de cambio"
+
+    if any(
+        p in t
+        for p in [
+            "tasa de referencia",
+            "tasa de interes",
+            "credito",
+            "liquidez",
+            "politica monetaria",
+            "reservas internacionales"
+        ]
+    ):
+        return "Monetario y financiero"
+
+    if any(
+        p in t
+        for p in [
+            "recaudacion",
+            "tribut",
+            "gasto publico",
+            "deuda publica",
+            "fiscal"
+        ]
+    ):
+        return "Sector fiscal"
+
+    if any(
+        p in t
+        for p in [
+            "empleo",
+            "desempleo",
+            "ocupacion",
+            "ingreso laboral",
+            "remuneracion"
+        ]
+    ):
+        return "Mercado laboral"
+
+    return "Economía peruana"
+
+
+# ============================================================
+# BASE RELACIONADA
+# ============================================================
+
+BASES_URL = (
+    "https://analisisperudatos.blogspot.com/"
+    "p/bases-de-datos_01581930746.html"
+)
+
+
+def base_relacionada(titulo):
+    t = normalizar(titulo)
+
+    palabras = [
+        "inflacion",
+        "ipc",
+        "pbi",
+        "produccion",
+        "exportacion",
+        "importacion",
+        "balanza comercial",
+        "tipo de cambio",
+        "tasa de referencia",
+        "credito",
+        "liquidez",
+        "reservas internacionales",
+        "terminos de intercambio",
+    ]
+
+    if any(
+        p in t
+        for p in palabras
+    ):
+        return BASES_URL
+
+    return ""
+
+
+# ============================================================
+# PUNTUACIÓN
+# ============================================================
+
+def puntuacion(titulo, fecha):
+    puntos = 0
+
+    t = normalizar(titulo)
+
+    palabras_alta_prioridad = [
+        "pbi",
+        "inflacion",
+        "tasa de referencia",
+        "produccion nacional",
+        "empleo",
+        "exportaciones",
+        "importaciones",
+        "tipo de cambio",
+        "recaudacion",
+    ]
+
+    for palabra in palabras_alta_prioridad:
+
+        if palabra in t:
+            puntos += 3
+
+    if fecha:
+
+        ahora = datetime.now(
+            timezone.utc
+        )
+
+        dias = (
+            ahora - fecha
+        ).days
+
+        puntos += max(
+            0,
+            14 - dias
+        )
+
+    return puntos
+
+
+# ============================================================
+# PROCESAMIENTO
+# ============================================================
+
+def procesar_candidatas(candidatas):
+    ahora = datetime.now(
+        timezone.utc
+    )
+
+    limite = ahora - timedelta(
+        days=DIAS_MAXIMOS
+    )
+
+    noticias = []
+
+    urls_vistas = set()
+    titulos_vistos = set()
+
+    for candidata in candidatas:
+
+        titulo = candidata["titulo"]
+        url = candidata["url_fuente"]
+
+        titulo_n = normalizar(
+            titulo
+        )
+
+        if (
+            url in urls_vistas
+            or titulo_n in titulos_vistos
+        ):
+            continue
+
+        urls_vistas.add(url)
+        titulos_vistos.add(
+            titulo_n
+        )
+
+        detalle = analizar_pagina(
+            url,
+            candidata["fuente"],
+            titulo
+        )
+
+        fecha = detalle[
+            "fecha_obj"
+        ]
+
+        # Si no conseguimos una fecha
+        # confiable, no publicamos.
+        if fecha is None:
+            continue
+
+        if fecha < limite:
+            continue
+
+        resumen = detalle[
+            "resumen"
+        ]
+
+        if not resumen:
+            continue
+
+        categoria = categorizar(
+            titulo
+        )
+
+        fecha_texto = fecha.strftime(
+            "%d/%m/%Y"
+        )
+
+        noticias.append({
+            "id": (
+                fecha.strftime(
+                    "%Y%m%d"
+                )
+                + "-"
+                + slug(titulo)
+            ),
+            "fecha": fecha_texto,
+            "fecha_iso": fecha.strftime(
+                "%Y-%m-%d"
+            ),
+            "fuente": candidata[
+                "fuente"
+            ],
+            "categoria": categoria,
+            "titulo": titulo,
+            "resumen": resumen,
+            "url_fuente": url,
+            "url_base": (
+                base_relacionada(
+                    titulo
+                )
+            ),
+            "_fecha_obj": fecha,
+            "_score": puntuacion(
+                titulo,
+                fecha
+            )
+        })
+
+    noticias.sort(
+        key=lambda n: (
+            n["_fecha_obj"],
+            n["_score"]
+        ),
+        reverse=True
+    )
+
+    noticias = noticias[
+        :MAX_NOTICIAS
+    ]
+
+    for n in noticias:
+        n.pop(
+            "_fecha_obj",
+            None
+        )
+
+        n.pop(
+            "_score",
+            None
+        )
+
+    return noticias
+
+
+# ============================================================
+# EJECUCIÓN
+# ============================================================
+
+def main():
+
+    print(
+        "Buscando actualidad "
+        "económica del Perú..."
+    )
+
+    candidatas = []
+
+    candidatas.extend(
+        obtener_bcrp()
+    )
+
+    candidatas.extend(
+        obtener_inei()
+    )
+
+    candidatas.extend(
+        obtener_mef()
+    )
+
+    candidatas.extend(
+        obtener_sunat()
+    )
+
+    print(
+        "Candidatas encontradas:",
+        len(candidatas)
+    )
+
+    noticias = procesar_candidatas(
+        candidatas
+    )
+
+    salida = {
+        "actualizado": (
+            datetime.now(
+                timezone.utc
+            )
+            .strftime(
+                "%Y-%m-%d"
+            )
+        ),
+        "total": len(noticias),
+        "noticias": noticias
+    }
+
+    with open(
+        ARCHIVO_SALIDA,
+        "w",
+        encoding="utf-8"
+    ) as archivo:
+
+        json.dump(
+            salida,
+            archivo,
+            ensure_ascii=False,
+            indent=2
+        )
+
+    print(
+        "actualidad.json actualizado "
+        f"con {len(noticias)} noticias."
+    )
+
+
+if __name__ == "__main__":
+    main()

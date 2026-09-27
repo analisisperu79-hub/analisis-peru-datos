@@ -374,6 +374,18 @@ SERIES_CATALOGO = {
     "api_fin": "2100-4",
     "permitir_log": False,
 },
+    "PN39524FM": {
+    "nombre": "Resultado económico del sector público no financiero - acumulado 12 meses",
+    "nombre_corto": "resultado_economico_spnf_12m",
+    "categoria": "Sector fiscal",
+    "frecuencia": "M",
+    "unidad": "Porcentaje del PBI",
+    "fuente": "BCRP",
+    "tipo_fuente": "bcrp",
+    "api_inicio": "2007-01",
+    "api_fin": "2100-12",
+    "permitir_log": False,
+},
 
     # --------------------------------------------------------
     # MULTIDIMENSIONALES — INEI

@@ -449,6 +449,18 @@ SERIES = {
     "permitir_log": False,
     "permitir_ajuste_estacional": False,
 },
+    "PN39524FM": {
+    "nombre": "Resultado económico del sector público no financiero - acumulado 12 meses",
+    "codigo": "PN39524FM",
+    "nombre_corto": "resultado_economico_spnf_12m",
+    "frecuencia": "M",
+    "unidad": "Porcentaje del PBI",
+    "fuente": "BCRP",
+    "api_inicio": "2007-01",
+    "api_fin": "2100-12",
+    "permitir_log": False,
+    "permitir_ajuste_estacional": False,
+},
 }
 
 DEFAULT_SERIE = "PM04946AA"

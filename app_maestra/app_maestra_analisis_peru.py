@@ -485,6 +485,18 @@ SERIES = {
     "permitir_log": True,
     "permitir_ajuste_estacional": True,
 },
+    "PN03432FQ": {
+    "nombre": "Deuda pública total",
+    "codigo": "PN03432FQ",
+    "nombre_corto": "deuda_publica_total",
+    "frecuencia": "Q",
+    "unidad": "Porcentaje del PBI",
+    "fuente": "BCRP",
+    "api_inicio": "1999-1",
+    "api_fin": "2100-4",
+    "permitir_log": True,
+    "permitir_ajuste_estacional": False,
+},
 }
 
 DEFAULT_SERIE = "PM04946AA"

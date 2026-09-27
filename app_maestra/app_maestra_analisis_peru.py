@@ -473,6 +473,18 @@ SERIES = {
     "permitir_log": True,
     "permitir_ajuste_estacional": True,
 },
+    "PN02207FM": {
+    "nombre": "Gasto no financiero del Gobierno General",
+    "codigo": "PN02207FM",
+    "nombre_corto": "gasto_no_financiero_gobierno_general",
+    "frecuencia": "M",
+    "unidad": "Millones de soles",
+    "fuente": "BCRP",
+    "api_inicio": "2006-01",
+    "api_fin": "2100-12",
+    "permitir_log": True,
+    "permitir_ajuste_estacional": True,
+},
 }
 
 DEFAULT_SERIE = "PM04946AA"

@@ -398,6 +398,18 @@ SERIES_CATALOGO = {
     "api_fin": "2100-12",
     "permitir_log": True,
 },
+    "PN02207FM": {
+    "nombre": "Gasto no financiero del Gobierno General",
+    "nombre_corto": "gasto_no_financiero_gobierno_general",
+    "categoria": "Sector fiscal",
+    "frecuencia": "M",
+    "unidad": "Millones de soles",
+    "fuente": "BCRP",
+    "tipo_fuente": "bcrp",
+    "api_inicio": "2006-01",
+    "api_fin": "2100-12",
+    "permitir_log": True,
+},
 
     # --------------------------------------------------------
     # MULTIDIMENSIONALES — INEI

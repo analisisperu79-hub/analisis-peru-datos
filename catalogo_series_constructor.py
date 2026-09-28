@@ -422,6 +422,18 @@ SERIES_CATALOGO = {
     "api_fin": "2100-4",
     "permitir_log": True,
 },
+    "PN01728AM": {
+    "nombre": "PBI mensual del Perú - variación interanual",
+    "nombre_corto": "pbi_mensual_variacion_interanual",
+    "categoria": "Actividad económica",
+    "frecuencia": "M",
+    "unidad": "Variación porcentual interanual",
+    "fuente": "BCRP",
+    "tipo_fuente": "bcrp",
+    "api_inicio": "1995-01",
+    "api_fin": "2100-12",
+    "permitir_log": False,
+},
 
     # --------------------------------------------------------
     # MULTIDIMENSIONALES — INEI

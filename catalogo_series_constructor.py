@@ -410,6 +410,18 @@ SERIES_CATALOGO = {
     "api_fin": "2100-12",
     "permitir_log": True,
 },
+    "PN03432FQ": {
+    "nombre": "Deuda pública total",
+    "nombre_corto": "deuda_publica_total",
+    "categoria": "Sector fiscal",
+    "frecuencia": "Q",
+    "unidad": "Porcentaje del PBI",
+    "fuente": "BCRP",
+    "tipo_fuente": "bcrp",
+    "api_inicio": "1999-1",
+    "api_fin": "2100-4",
+    "permitir_log": True,
+},
 
     # --------------------------------------------------------
     # MULTIDIMENSIONALES — INEI

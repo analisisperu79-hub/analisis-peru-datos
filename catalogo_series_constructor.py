@@ -434,6 +434,18 @@ SERIES_CATALOGO = {
     "api_fin": "2100-12",
     "permitir_log": False,
 },
+    "PN38051GM": {
+    "nombre": "PEA ocupada en Lima Metropolitana",
+    "nombre_corto": "pea_ocupada_lima_metropolitana",
+    "categoria": "Mercado laboral",
+    "frecuencia": "M",
+    "unidad": "Miles de personas",
+    "fuente": "BCRP / INEI",
+    "tipo_fuente": "bcrp",
+    "api_inicio": "2001-05",
+    "api_fin": "2100-12",
+    "permitir_log": True,
+},
 
     # --------------------------------------------------------
     # MULTIDIMENSIONALES — INEI

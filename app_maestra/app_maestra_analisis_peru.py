@@ -509,6 +509,18 @@ SERIES = {
     "permitir_log": False,
     "permitir_ajuste_estacional": False,
 },
+    "PN38051GM": {
+    "nombre": "PEA ocupada en Lima Metropolitana",
+    "codigo": "PN38051GM",
+    "nombre_corto": "pea_ocupada_lima_metropolitana",
+    "frecuencia": "M",
+    "unidad": "Miles de personas",
+    "fuente": "BCRP / INEI",
+    "api_inicio": "2001-05",
+    "api_fin": "2100-12",
+    "permitir_log": True,
+    "permitir_ajuste_estacional": False,
+},
 }
 
 DEFAULT_SERIE = "PM04946AA"

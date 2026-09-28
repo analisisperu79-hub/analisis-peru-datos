@@ -497,6 +497,18 @@ SERIES = {
     "permitir_log": True,
     "permitir_ajuste_estacional": False,
 },
+    "PN01728AM": {
+    "nombre": "PBI mensual del Perú - variación interanual",
+    "codigo": "PN01728AM",
+    "nombre_corto": "pbi_mensual_variacion_interanual",
+    "frecuencia": "M",
+    "unidad": "Variación porcentual interanual",
+    "fuente": "BCRP",
+    "api_inicio": "1995-01",
+    "api_fin": "2100-12",
+    "permitir_log": False,
+    "permitir_ajuste_estacional": False,
+},
 }
 
 DEFAULT_SERIE = "PM04946AA"

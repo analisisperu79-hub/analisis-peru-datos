@@ -895,22 +895,53 @@ def etiqueta_periodo(fecha, frecuencia=None):
 @st.cache_data(ttl=CACHE_TTL, show_spinner=False)
 def descargar_serie_bcrp(codigo, api_inicio, api_fin, nombre_corto, frecuencia):
     """
-    Descarga una serie del BCRP.
+    Descarga una serie desde BCRPData.
 
-    IMPORTANTE:
-    Los parámetros forman parte de la clave de caché de Streamlit.
-    Así cada código BCRP mantiene su propio caché y una serie no puede
-    reutilizar por error los datos almacenados de otra.
+    Valida la respuesta antes de procesarla para evitar que una respuesta
+    vacía, HTML o temporalmente incorrecta termine en JSONDecodeError.
     """
     url = f"{BCRP_API}/{codigo}/json/{api_inicio}/{api_fin}/esp"
-    r = requests.get(url, timeout=30)
+
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 Chrome/120 Safari/537.36"
+        ),
+        "Accept": "application/json,text/plain,*/*",
+    }
+
+    r = requests.get(url, timeout=30, headers=headers)
     r.raise_for_status()
-    periodos = r.json().get("periods", [])
+
+    if not r.content:
+        raise RuntimeError("BCRPData devolvió una respuesta vacía.")
+
+    try:
+        datos = r.json()
+    except requests.exceptions.JSONDecodeError as exc:
+        tipo_contenido = r.headers.get("Content-Type", "desconocido")
+        inicio_respuesta = r.text[:300].replace("\n", " ").strip()
+        raise RuntimeError(
+            "BCRPData no devolvió JSON válido. "
+            f"Content-Type: {tipo_contenido}. "
+            f"Respuesta inicial: {inicio_respuesta}"
+        ) from exc
+
+    if not isinstance(datos, dict):
+        raise RuntimeError("BCRPData devolvió una estructura inesperada.")
+
+    periodos = datos.get("periods", [])
+    if not isinstance(periodos, list):
+        raise RuntimeError(
+            "La respuesta de BCRPData no contiene una lista válida de periodos."
+        )
+
     filas = []
 
     for item in periodos:
         vals = item.get("values", [])
         raw = vals[0] if vals else None
+
         try:
             valor = float(str(raw).replace(",", "").strip())
         except Exception:
@@ -1212,6 +1243,7 @@ try:
 except Exception as e:
     st.error("No fue posible descargar la serie desde BCRPData.")
     st.caption(f"Detalle técnico: {type(e).__name__}")
+    st.code(str(e))
     st.stop()
 
 if df_total.empty:

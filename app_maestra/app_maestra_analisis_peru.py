@@ -521,6 +521,21 @@ SERIES = {
     "permitir_log": True,
     "permitir_ajuste_estacional": False,
 },
+        # --------------------------------------------------------
+    # Expectativa de inflación a 12 meses
+    # --------------------------------------------------------
+    "PD12912AM": {
+        "nombre": "Expectativa de inflación a 12 meses",
+        "codigo": "PD12912AM",
+        "nombre_corto": "expectativa_inflacion_12m",
+        "frecuencia": "M",
+        "unidad": "Porcentaje",
+        "fuente": "BCRP",
+        "api_inicio": "2002-01",
+        "api_fin": "2100-12",
+        "permitir_log": False,
+        "permitir_ajuste_estacional": False,
+    },
 }
 
 DEFAULT_SERIE = "PM04946AA"

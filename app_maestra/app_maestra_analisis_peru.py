@@ -551,6 +551,21 @@ SERIES = {
         "permitir_log": False,
         "permitir_ajuste_estacional": False,
     },
+        # --------------------------------------------------------
+    # Expectativa de tipo de cambio a 12 meses
+    # --------------------------------------------------------
+    "PD38049AM": {
+        "nombre": "Expectativa de tipo de cambio a 12 meses",
+        "codigo": "PD38049AM",
+        "nombre_corto": "expectativa_tipo_cambio_12m",
+        "frecuencia": "M",
+        "unidad": "S/ por US$",
+        "fuente": "BCRP",
+        "api_inicio": "2006-12",
+        "api_fin": "2100-12",
+        "permitir_log": False,
+        "permitir_ajuste_estacional": False,
+    },
 }
 
 DEFAULT_SERIE = "PM04946AA"

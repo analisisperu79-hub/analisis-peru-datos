@@ -536,6 +536,21 @@ SERIES = {
         "permitir_log": False,
         "permitir_ajuste_estacional": False,
     },
+        # --------------------------------------------------------
+    # Expectativa de PBI a 12 meses
+    # --------------------------------------------------------
+    "PD38048AM": {
+        "nombre": "Expectativa de crecimiento del PBI a 12 meses",
+        "codigo": "PD38048AM",
+        "nombre_corto": "expectativa_pbi_12m",
+        "frecuencia": "M",
+        "unidad": "Porcentaje",
+        "fuente": "BCRP",
+        "api_inicio": "2006-12",
+        "api_fin": "2100-12",
+        "permitir_log": False,
+        "permitir_ajuste_estacional": False,
+    },
 }
 
 DEFAULT_SERIE = "PM04946AA"
